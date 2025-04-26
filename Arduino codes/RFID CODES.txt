@@ -1,0 +1,2 @@
+Card UID: 44 A9 01 A7 -> karta
+9F 2F E2 1F -> card
