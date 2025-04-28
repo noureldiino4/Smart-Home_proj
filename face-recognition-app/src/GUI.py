@@ -2,7 +2,7 @@ import sys
 import serial  # For serial communication
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
-    QWidget, QGridLayout, QFrame, QCheckBox
+    QWidget, QGridLayout, QFrame
 )
 from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtCore import Qt, QTimer
@@ -15,7 +15,8 @@ class SmartHomeApp(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Smart Home Control Panel")
-        self.setGeometry(100, 100, 400, 800)
+        self.setGeometry(500, 100, 400, 600)
+        self.setStyleSheet("background-color:white;")
 
         # Initialize Serial Communication
         try:
@@ -26,6 +27,7 @@ class SmartHomeApp(QMainWindow):
 
         # Main Widget
         main_widget = QWidget()
+        main_widget.setStyleSheet("background-color: white;")
         self.setCentralWidget(main_widget)
 
         # Main Layout
@@ -34,7 +36,7 @@ class SmartHomeApp(QMainWindow):
 
         # Header Section
         header_frame = QFrame()
-        header_frame.setStyleSheet("background-color: #ff7f50; border-radius: 10px;")
+        header_frame.setStyleSheet("background-color: #ff7f50; border-radius: 100px;")
         header_layout = QHBoxLayout()
         header_frame.setLayout(header_layout)
 
@@ -44,7 +46,7 @@ class SmartHomeApp(QMainWindow):
             print("Error: profile.jpg not found.")
         profile_pixmap = profile_pixmap.scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         profile_pic.setPixmap(profile_pixmap)
-        profile_pic.setStyleSheet("border-radius: 25px;")
+        profile_pic.setStyleSheet("border-radius: 50px;")
         header_layout.addWidget(profile_pic)
 
         welcome_label = QLabel("Welcome Home,\nNour El Din Nassar")
@@ -68,7 +70,7 @@ class SmartHomeApp(QMainWindow):
 
         rooms_layout = QHBoxLayout()
         room_buttons = [
-            {"name": "Living Room", "icon": r"A:\College stuff\DATA AQ\GUI\icons\living_room.jpg"},
+            {"name": "Living Room", "icon": r"A:\College stuff\DATA AQ\GUI\icons\living-room.jpg"},
             {"name": "Kitchen", "icon": r"A:\College stuff\DATA AQ\GUI\icons\kitchen.jpg"},
             {"name": "Garage", "icon": r"A:\College stuff\DATA AQ\GUI\icons\garage.jpg"},
             {"name": "Bedroom", "icon": r"A:\College stuff\DATA AQ\GUI\icons\bedroom.jpg"}
@@ -83,7 +85,7 @@ class SmartHomeApp(QMainWindow):
                     color: {'white' if i == 0 else 'black'};
                     border: 1px solid #ff7f50;
                     border-radius: 10px;
-                    padding: 10px;
+                    padding: 15px;
                     text-align: center;
                 }}
                 QPushButton:hover {{
@@ -95,21 +97,21 @@ class SmartHomeApp(QMainWindow):
             room_icon = QIcon(room_icon_pixmap)
             room_button.setIcon(room_icon)
             room_button.setIconSize(room_icon_pixmap.size())
+            
+
             rooms_layout.addWidget(room_button)
 
         main_layout.addLayout(rooms_layout)
 
         # Devices Section
-        devices_label = QLabel("Devices")
+        devices_label = QLabel("Functionalities")
         devices_label.setStyleSheet("font-size: 14px; font-weight: bold; margin: 10px 0;")
         main_layout.addWidget(devices_label)
 
         devices_layout = QGridLayout()
         devices = [
             {"name": "Air Conditioner", "icon": r"A:\College stuff\DATA AQ\GUI\icons\airconditioner.jpg"},
-            {"name": "Bulb Lamp", "icon": r"A:\College stuff\DATA AQ\GUI\icons\light.jpg"},
-            {"name": "Smart TV", "icon": r"A:\College stuff\DATA AQ\GUI\icons\tv_icon.jpg"},
-            {"name": "WiFi Router", "icon": r"A:\College stuff\DATA AQ\GUI\icons\wifi_icon.jpg"}
+            {"name": "Bulb Lamp", "icon": r"A:\College stuff\DATA AQ\GUI\icons\light.jpg"}
         ]
 
         for i, device in enumerate(devices):
@@ -127,7 +129,7 @@ class SmartHomeApp(QMainWindow):
             device_layout.addWidget(icon_label)
 
             name_label = QLabel(device["name"])
-            name_label.setStyleSheet("font-size: 12px; font-weight: bold; text-align: center;")
+            name_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center;")
             name_label.setAlignment(Qt.AlignCenter)
             device_layout.addWidget(name_label)
 
@@ -141,19 +143,36 @@ class SmartHomeApp(QMainWindow):
 
             devices_layout.addWidget(device_frame, i // 2, i % 2)
 
+        # Add Gate Section
+        gate_frame = QFrame()
+        gate_frame.setStyleSheet("background-color: white; border: 1px solid #ddd; border-radius: 10px;")
+        gate_layout = QVBoxLayout()
+        gate_frame.setLayout(gate_layout)
+
+        # Add Gate Icon
+        gate_icon_label = QLabel()
+        gate_icon_pixmap = QPixmap(r"A:\College stuff\DATA AQ\GUI\icons\gate.jpg").scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        if gate_icon_pixmap.isNull():
+            print("Error: gate.jpg not found.")
+        gate_icon_label.setPixmap(gate_icon_pixmap)
+        gate_icon_label.setAlignment(Qt.AlignCenter)
+        gate_layout.addWidget(gate_icon_label)
+
+        # Add Gate Label
+        gate_label = QLabel("Gate")
+        gate_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center;")
+        gate_label.setAlignment(Qt.AlignCenter)
+        gate_layout.addWidget(gate_label)
+
+        # Add Gate Button
+        gate_button = QPushButton("Open Gate")
+        gate_button.setStyleSheet("background-color: #ff7f50; color: white; border-radius: 10px; padding: 10px;")
+        gate_layout.addWidget(gate_button)
+
+        # Add Gate Frame to Devices Layout
+        devices_layout.addWidget(gate_frame, 1, 0, 1, 2)  # Add Gate to the layout spanning 2 columns
+
         main_layout.addLayout(devices_layout)
-
-        # Footer Section
-        footer_layout = QHBoxLayout()
-        home_button = QPushButton("Home")
-        home_button.setStyleSheet("background-color: #ff7f50; color: white; border-radius: 10px; padding: 10px;")
-        footer_layout.addWidget(home_button)
-
-        settings_button = QPushButton("Settings")
-        settings_button.setStyleSheet("background-color: #ff7f50; color: white; border-radius: 10px; padding: 10px;")
-        footer_layout.addWidget(settings_button)
-
-        main_layout.addLayout(footer_layout)
 
         # Timer to Update Sensor Data
         self.timer = QTimer()
@@ -181,6 +200,8 @@ class SmartHomeApp(QMainWindow):
                         self.humidity_label.setText(f"Humidity: {humidity}%")
             except Exception as e:
                 print(f"Error reading serial data: {e}")
+
+    
 
 
 if __name__ == "__main__":
