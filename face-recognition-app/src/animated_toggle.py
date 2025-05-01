@@ -10,7 +10,7 @@ class AnimatedToggle(QCheckBox):
         self.setCursor(Qt.PointingHandCursor)
         self._animation = QPropertyAnimation(self, b"geometry", self)
         self._animation.setDuration(200)
-        self._checked_color = QColor("#ff7f50")  # Orange color for checked state
+        self._checked_color = QColor("#001f3f")  # Orange color for checked state
         self._unchecked_color = QColor("#ddd")  # Gray color for unchecked state
         self._circle_color = QColor("#ffffff")  # White color for the circle
         self._circle_position = 2  # Initial position of the circle

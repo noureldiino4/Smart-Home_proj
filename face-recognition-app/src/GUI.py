@@ -36,7 +36,7 @@ class SmartHomeApp(QMainWindow):
 
         # Header Section
         header_frame = QFrame()
-        header_frame.setStyleSheet("background-color: #ff7f50; border-radius: 100px;")
+        header_frame.setStyleSheet("background-color: #001f3f; border-radius: 100px;")
         header_layout = QHBoxLayout()
         header_frame.setLayout(header_layout)
 
@@ -46,7 +46,7 @@ class SmartHomeApp(QMainWindow):
             print("Error: profile.jpg not found.")
         profile_pixmap = profile_pixmap.scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         profile_pic.setPixmap(profile_pixmap)
-        profile_pic.setStyleSheet("border-radius: 50px;")
+        profile_pic.setStyleSheet("border-radius: 50px; background-color: #f0f0f0; padding: 5px;")
         header_layout.addWidget(profile_pic)
 
         welcome_label = QLabel("Welcome Home,\nNour El Din Nassar")
@@ -83,15 +83,15 @@ class SmartHomeApp(QMainWindow):
             room_button.setStyleSheet(
                 f"""
                 QPushButton {{
-                    background-color: {'#ff7f50' if i == 0 else 'white'};
+                    background-color: {'#001f3f' if i == 0 else 'white'};
                     color: {'white' if i == 0 else 'black'};
-                    border: 1px solid #ff7f50;
+                    border: 1px solid #001f3f;
                     border-radius: 10px;
                     padding: 15px;
                     text-align: center;
                 }}
                 QPushButton:hover {{
-                    background-color: #ff5722;
+                    background-color: #003366;
                 }}
                 """
             )
@@ -126,7 +126,7 @@ class SmartHomeApp(QMainWindow):
 
         for i, device in enumerate(devices):
             device_frame = QFrame()
-            device_frame.setStyleSheet("background-color: white; border: 1px solid #ddd; border-radius: 10px;")
+            device_frame.setStyleSheet("background-color: white; border: 1px solid #001f3f; border-radius: 10px;")
             device_layout = QVBoxLayout()
             device_frame.setLayout(device_layout)
 
@@ -136,6 +136,7 @@ class SmartHomeApp(QMainWindow):
                 print(f"Error: {device['icon']} not found.")
             icon_label.setPixmap(icon_pixmap)
             icon_label.setAlignment(Qt.AlignCenter)
+            icon_label.setStyleSheet("background-color: #f0f0f0; border: 1px solid #001f3f; border-radius: 10px; padding: 5px;")
             device_layout.addWidget(icon_label)
 
             name_label = QLabel(device["name"])
@@ -158,7 +159,7 @@ class SmartHomeApp(QMainWindow):
 
         # Add Gate Section
         gate_frame = QFrame()
-        gate_frame.setStyleSheet("background-color: white; border: 1px solid #ddd; border-radius: 10px;")
+        gate_frame.setStyleSheet("background-color: white; border: 1px solid #001f3f; border-radius: 10px;")
         gate_layout = QVBoxLayout()
         gate_frame.setLayout(gate_layout)
 
@@ -171,11 +172,12 @@ class SmartHomeApp(QMainWindow):
         else:
             gate_icon_label.setPixmap(gate_pixmap)
         gate_icon_label.setAlignment(Qt.AlignCenter)
+        gate_icon_label.setStyleSheet("background-color: #f0f0f0; border: 1px solid #001f3f; border-radius: 10px; padding: 5px;")
         gate_layout.addWidget(gate_icon_label)
 
         # Add Gate Label
         gate_name_label = QLabel("Gate")
-        gate_name_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center;")
+        gate_name_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center; color: #001f3f;")
         gate_name_label.setAlignment(Qt.AlignCenter)
         gate_layout.addWidget(gate_name_label)
 
@@ -184,6 +186,18 @@ class SmartHomeApp(QMainWindow):
         gate_toggle_layout.addStretch()
         gate_toggle = AnimatedToggle()
         gate_toggle.setFixedSize(50, 25)  # Match the size of other toggles
+        gate_toggle.setStyleSheet("""
+            AnimatedToggle {
+                background-color: #f0f0f0;  /* Background color */
+                border-radius: 12px;
+            }
+            AnimatedToggle::checked {
+                background-color: #001f3f;  /* Navy color for active state */
+            }
+            AnimatedToggle::unchecked {
+                background-color: #cccccc;  /* Gray color for inactive state */
+            }
+        """)
         gate_toggle.stateChanged.connect(self.handle_gate_toggle)  # Connect to a handler
         gate_toggle_layout.addWidget(gate_toggle)
         gate_toggle_layout.addStretch()
@@ -230,13 +244,13 @@ class SmartHomeApp(QMainWindow):
                 QPushButton {
                     background-color: white;
                     color: black;
-                    border: 1px solid #ff7f50;
+                    border: 1px solid #001f3f;
                     border-radius: 10px;
                     padding: 15px;
                     text-align: center;
                 }
                 QPushButton:hover {
-                    background-color: #ff5722;
+                    background-color: #001f3f;
                 }
                 """
             )
@@ -245,15 +259,15 @@ class SmartHomeApp(QMainWindow):
         clicked_button.setStyleSheet(
             """
             QPushButton {
-                background-color: #ff7f50;
+                background-color: #001f3f;
                 color: white;
-                border: 1px solid #ff7f50;
+                border: 1px solid #001f3f;
                 border-radius: 10px;
                 padding: 15px;
                 text-align: center;
             }
             QPushButton:hover {
-                background-color: #ff5722;
+                background-color: #001f3f;
             }
             """
         )
@@ -279,7 +293,7 @@ class SmartHomeApp(QMainWindow):
         if aircon_frame:
             # Create Garage Door Frame
             garage_door_frame = QFrame()
-            garage_door_frame.setStyleSheet("background-color: white; border: 1px solid #ddd; border-radius: 10px;")
+            garage_door_frame.setStyleSheet("background-color: white; border: 1px solid #001f3f; border-radius: 10px;")
             garage_door_layout = QVBoxLayout()
             garage_door_frame.setLayout(garage_door_layout)
 
@@ -292,11 +306,12 @@ class SmartHomeApp(QMainWindow):
             else:
                 garage_door_icon_label.setPixmap(garage_door_pixmap)
             garage_door_icon_label.setAlignment(Qt.AlignCenter)
+            garage_door_icon_label.setStyleSheet("background-color: #f0f0f0; border: 1px solid #001f3f; border-radius: 10px; padding: 5px;")
             garage_door_layout.addWidget(garage_door_icon_label)
 
             # Add Garage Door Name
             garage_door_name_label = QLabel("Garage Door")
-            garage_door_name_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center;")
+            garage_door_name_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center; color: #001f3f;")
             garage_door_name_label.setAlignment(Qt.AlignCenter)
             garage_door_layout.addWidget(garage_door_name_label)
 
@@ -305,6 +320,18 @@ class SmartHomeApp(QMainWindow):
             garage_door_toggle_layout.addStretch()
             garage_door_toggle = AnimatedToggle()
             garage_door_toggle.setFixedSize(50, 25)  # Match the size of the Bulb Lamp toggle
+            garage_door_toggle.setStyleSheet("""
+                AnimatedToggle {
+                background-color: #f0f0f0;  /* Background color */
+                border-radius: 12px;
+                }
+                AnimatedToggle::checked {
+                background-color: #001f3f;  /* Navy color for active state */
+                }
+                AnimatedToggle::unchecked {
+                background-color: #cccccc;  /* Gray color for inactive state */
+                }
+            """)    
             garage_door_toggle_layout.addWidget(garage_door_toggle)
             garage_door_toggle_layout.addStretch()
             garage_door_layout.addLayout(garage_door_toggle_layout)
@@ -334,7 +361,7 @@ class SmartHomeApp(QMainWindow):
 
         # Recreate Air Conditioner
         aircon_frame = QFrame()
-        aircon_frame.setStyleSheet("background-color: white; border: 1px solid #ddd; border-radius: 10px;")
+        aircon_frame.setStyleSheet("background-color: white; border: 1px solid #001f3f; border-radius: 10px;")
         aircon_layout = QVBoxLayout()
         aircon_frame.setLayout(aircon_layout)
 
@@ -342,10 +369,11 @@ class SmartHomeApp(QMainWindow):
         aircon_pixmap = QPixmap(r"A:\College stuff\DATA AQ\GUI\icons\airconditioner.jpg").scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         aircon_icon_label.setPixmap(aircon_pixmap)
         aircon_icon_label.setAlignment(Qt.AlignCenter)
+        aircon_icon_label.setStyleSheet("background-color: #f0f0f0; border: 1px solid #001f3f; border-radius: 10px; padding: 5px;")
         aircon_layout.addWidget(aircon_icon_label)
 
         aircon_name_label = QLabel("Air Conditioner")
-        aircon_name_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center;")
+        aircon_name_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center; color: #001f3f;")
         aircon_name_label.setAlignment(Qt.AlignCenter)
         aircon_layout.addWidget(aircon_name_label)
 
@@ -361,7 +389,7 @@ class SmartHomeApp(QMainWindow):
 
         # Recreate Bulb Lamp
         bulb_frame = QFrame()
-        bulb_frame.setStyleSheet("background-color: white; border: 1px solid #ddd; border-radius: 10px;")
+        bulb_frame.setStyleSheet("background-color: white; border: 1px solid #001f3f; border-radius: 10px;")
         bulb_layout = QVBoxLayout()
         bulb_frame.setLayout(bulb_layout)
 
@@ -369,10 +397,11 @@ class SmartHomeApp(QMainWindow):
         bulb_pixmap = QPixmap(r"A:\College stuff\DATA AQ\GUI\icons\light.jpg").scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         bulb_icon_label.setPixmap(bulb_pixmap)
         bulb_icon_label.setAlignment(Qt.AlignCenter)
+        bulb_icon_label.setStyleSheet("background-color: #f0f0f0; border: 1px solid #001f3f; border-radius: 10px; padding: 5px;")
         bulb_layout.addWidget(bulb_icon_label)
 
         bulb_name_label = QLabel("Bulb Lamp")
-        bulb_name_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center;")
+        bulb_name_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center; color: #001f3f;")
         bulb_name_label.setAlignment(Qt.AlignCenter)
         bulb_layout.addWidget(bulb_name_label)
 
@@ -388,7 +417,7 @@ class SmartHomeApp(QMainWindow):
 
         # Recreate Gate
         gate_frame = QFrame()
-        gate_frame.setStyleSheet("background-color: white; border: 1px solid #ddd; border-radius: 10px;")
+        gate_frame.setStyleSheet("background-color: #f0f0f0; border: 1px solid #001f3f; border-radius: 10px;")
         gate_layout = QVBoxLayout()
         gate_frame.setLayout(gate_layout)
 
@@ -396,10 +425,11 @@ class SmartHomeApp(QMainWindow):
         gate_pixmap = QPixmap(r"A:\College stuff\DATA AQ\GUI\icons\gate.jpg").scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         gate_icon_label.setPixmap(gate_pixmap)
         gate_icon_label.setAlignment(Qt.AlignCenter)
+        gate_icon_label.setStyleSheet("background-color: #f0f0f0; border: 1px solid #001f3f; border-radius: 10px; padding: 5px;")
         gate_layout.addWidget(gate_icon_label)
 
         gate_name_label = QLabel("Gate")
-        gate_name_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center;")
+        gate_name_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center; color: #001f3f;")
         gate_name_label.setAlignment(Qt.AlignCenter)
         gate_layout.addWidget(gate_name_label)
 
@@ -408,6 +438,8 @@ class SmartHomeApp(QMainWindow):
         gate_toggle_layout.addStretch()
         gate_toggle = AnimatedToggle()
         gate_toggle.setFixedSize(50, 25)  # Match the size of other toggles
+        gate_toggle.setStyleSheet
+           
         gate_toggle.stateChanged.connect(self.handle_gate_toggle)  # Connect to a handler
         gate_toggle_layout.addWidget(gate_toggle)
         gate_toggle_layout.addStretch()
