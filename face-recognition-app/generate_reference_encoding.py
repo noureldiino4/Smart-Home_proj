@@ -1,19 +1,40 @@
 import face_recognition
 import pickle
-import cv2 as cv
+import os
 
-# Path to the reference image
-reference_image_path = r"A:\College stuff\DATA AQ\Nour1.jpg"
+# 1) List all of your reference image paths
+reference_image_paths = [
+    r"A:\College stuff\DATA AQ\Nour1.jpg",
+    r"A:\College stuff\DATA AQ\Magd1.jpg",
+    r"A:\College stuff\DATA AQ\Abdo1.jpg",
+    r"A:\College stuff\DATA AQ\Fares1.jpg"
+]
 
-# Load and encode the reference image
-reference_image = face_recognition.load_image_file(reference_image_path)
-reference_encodings = face_recognition.face_encodings(reference_image)
+known_encodings = []
+known_names     = []
 
-if len(reference_encodings) > 0:
-    reference_encoding = reference_encodings[0]
-    # Save the encoding to a file
-    with open("reference_encoding.pkl", "wb") as f:
-        pickle.dump(reference_encoding, f)
-    print("Reference encoding saved to 'reference_encoding.pkl'.")
-else:
-    print("No face found in the reference image.")
+# 2) Loop through each image, load it, find its face encoding, and grab a label
+for img_path in reference_image_paths:
+    # Derive a simple name from the filename (without extension)
+    name = os.path.splitext(os.path.basename(img_path))[0]
+    image = face_recognition.load_image_file(img_path)
+    encodings = face_recognition.face_encodings(image)
+
+    if not encodings:
+        print(f"[WARNING] no face found in {img_path!r}")
+        continue
+
+    # We’ll just take the first encoding per image
+    known_encodings.append(encodings[0])
+    known_names.append(name)
+    print(f"[OK]   loaded {name!r}")
+
+# 3) Save both lists into one pickle file
+data = {
+    "encodings": known_encodings,
+    "names":     known_names
+}
+with open("reference_encodings.pkl", "wb") as f:
+    pickle.dump(data, f)
+
+print(f"\nSaved {len(known_encodings)} encodings to 'reference_encodings.pkl'.")

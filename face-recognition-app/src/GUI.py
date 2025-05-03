@@ -1,5 +1,6 @@
 import sys
 import serial  # For serial communication
+import subprocess  # For running external scripts
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
     QWidget, QGridLayout, QFrame
@@ -20,7 +21,7 @@ class SmartHomeApp(QMainWindow):
 
         # Initialize Serial Communication
         try:
-            self.serial_port = serial.Serial('COM3', 9600, timeout=1)  # Replace 'COM3' with your Arduino's port
+            self.serial_port = serial.Serial('COM6', 9600, timeout=1)  # Replace 'COM3' with your Arduino's port
         except serial.SerialException:
             print("Error: Could not open serial port.")
             self.serial_port = None
@@ -36,7 +37,7 @@ class SmartHomeApp(QMainWindow):
 
         # Header Section
         header_frame = QFrame()
-        header_frame.setStyleSheet("background-color: #001f3f; border-radius: 100px;")
+        header_frame.setStyleSheet("background-color: #ff7f50; border-radius: 100px;")
         header_layout = QHBoxLayout()
         header_frame.setLayout(header_layout)
 
@@ -46,7 +47,7 @@ class SmartHomeApp(QMainWindow):
             print("Error: profile.jpg not found.")
         profile_pixmap = profile_pixmap.scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         profile_pic.setPixmap(profile_pixmap)
-        profile_pic.setStyleSheet("border-radius: 50px; background-color: #f0f0f0; padding: 5px;")
+        profile_pic.setStyleSheet("border-radius: 50px;")
         header_layout.addWidget(profile_pic)
 
         welcome_label = QLabel("Welcome Home,\nNour El Din Nassar")
@@ -83,15 +84,15 @@ class SmartHomeApp(QMainWindow):
             room_button.setStyleSheet(
                 f"""
                 QPushButton {{
-                    background-color: {'#001f3f' if i == 0 else 'white'};
+                    background-color: {'#ff7f50' if i == 0 else 'white'};
                     color: {'white' if i == 0 else 'black'};
-                    border: 1px solid #001f3f;
+                    border: 1px solid #ff7f50;
                     border-radius: 10px;
                     padding: 15px;
                     text-align: center;
                 }}
                 QPushButton:hover {{
-                    background-color: #003366;
+                    background-color: #ff5722;
                 }}
                 """
             )
@@ -126,7 +127,7 @@ class SmartHomeApp(QMainWindow):
 
         for i, device in enumerate(devices):
             device_frame = QFrame()
-            device_frame.setStyleSheet("background-color: white; border: 1px solid #001f3f; border-radius: 10px;")
+            device_frame.setStyleSheet("background-color: white; border: 1px solid #ddd; border-radius: 10px;")
             device_layout = QVBoxLayout()
             device_frame.setLayout(device_layout)
 
@@ -136,7 +137,6 @@ class SmartHomeApp(QMainWindow):
                 print(f"Error: {device['icon']} not found.")
             icon_label.setPixmap(icon_pixmap)
             icon_label.setAlignment(Qt.AlignCenter)
-            icon_label.setStyleSheet("background-color: #f0f0f0; border: 1px solid #001f3f; border-radius: 10px; padding: 5px;")
             device_layout.addWidget(icon_label)
 
             name_label = QLabel(device["name"])
@@ -157,55 +157,95 @@ class SmartHomeApp(QMainWindow):
 
             self.devices_layout.addWidget(device_frame, i // 2, i % 2)
 
-        # Add Gate Section
-        gate_frame = QFrame()
-        gate_frame.setStyleSheet("background-color: white; border: 1px solid #001f3f; border-radius: 10px;")
-        gate_layout = QVBoxLayout()
-        gate_frame.setLayout(gate_layout)
+       
 
-        # Add Gate Icon
-        gate_icon_label = QLabel()
-        gate_pixmap = QPixmap(r"A:\College stuff\DATA AQ\GUI\icons\gate.jpg").scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        if gate_pixmap.isNull():
+        
+
+        # Add Gate 1 Section
+        gate1_frame = QFrame()
+        gate1_frame.setStyleSheet("background-color: white; border: 1px solid #ddd; border-radius: 10px;")
+        gate1_layout = QVBoxLayout()
+        gate1_frame.setLayout(gate1_layout)
+
+        # Add Gate 1 Icon
+        gate1_icon_label = QLabel()
+        gate1_pixmap = QPixmap(r"A:\College stuff\DATA AQ\GUI\icons\gate.jpg").scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        if gate1_pixmap.isNull():
             print("Error: gate.jpg not found.")
-            gate_icon_label.setText("No Image")
+            gate1_icon_label.setText("No Image")
         else:
-            gate_icon_label.setPixmap(gate_pixmap)
-        gate_icon_label.setAlignment(Qt.AlignCenter)
-        gate_icon_label.setStyleSheet("background-color: #f0f0f0; border: 1px solid #001f3f; border-radius: 10px; padding: 5px;")
-        gate_layout.addWidget(gate_icon_label)
+            gate1_icon_label.setPixmap(gate1_pixmap)
+        gate1_icon_label.setAlignment(Qt.AlignCenter)
+        gate1_layout.addWidget(gate1_icon_label)
 
-        # Add Gate Label
-        gate_name_label = QLabel("Gate")
-        gate_name_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center; color: #001f3f;")
-        gate_name_label.setAlignment(Qt.AlignCenter)
-        gate_layout.addWidget(gate_name_label)
+        # Add Gate 1 Label
+        gate1_name_label = QLabel("Gate")
+        gate1_name_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center;")
+        gate1_name_label.setAlignment(Qt.AlignCenter)
+        gate1_layout.addWidget(gate1_name_label)
 
-        # Add Gate Toggle Button
-        gate_toggle_layout = QHBoxLayout()
-        gate_toggle_layout.addStretch()
-        gate_toggle = AnimatedToggle()
-        gate_toggle.setFixedSize(50, 25)  # Match the size of other toggles
-        gate_toggle.setStyleSheet("""
-            AnimatedToggle {
-                background-color: #f0f0f0;  /* Background color */
-                border-radius: 12px;
+        # Add Gate 1 Toggle Button
+        gate1_toggle_layout = QHBoxLayout()
+        gate1_toggle_layout.addStretch()
+        gate1_toggle = AnimatedToggle()
+        gate1_toggle.setFixedSize(50, 25)
+        gate1_toggle.stateChanged.connect(lambda state: self.handle_gate_toggle(state, "Gate"))  # Connect to a handler
+        gate1_toggle_layout.addWidget(gate1_toggle)
+        gate1_toggle_layout.addStretch()
+        gate1_layout.addLayout(gate1_toggle_layout)
+
+        # Add Gate 1 Frame to Devices Layout
+        self.devices_layout.addWidget(gate1_frame, 1, 0)  # Place in row 1, column 0
+        self.device_frames["Gate 1"] = gate1_frame
+
+        # Add Face ID Section (replacing Gate 2)
+        faceid_frame = QFrame()
+        faceid_frame.setStyleSheet("background-color: white; border: 1px solid #ddd; border-radius: 10px;")
+        faceid_layout = QVBoxLayout()
+        faceid_frame.setLayout(faceid_layout)
+
+        # Add Face ID Icon
+        faceid_icon_label = QLabel()
+        faceid_pixmap = QPixmap(r"A:\College stuff\DATA AQ\GUI\icons\FaceID.jpg").scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        if faceid_pixmap.isNull():
+            print("Error: Face ID image not found.")
+            faceid_icon_label.setText("No Image")
+        else:
+            faceid_icon_label.setPixmap(faceid_pixmap)
+        faceid_icon_label.setAlignment(Qt.AlignCenter)
+        faceid_layout.addWidget(faceid_icon_label)
+
+        # Add Face ID Label
+        faceid_name_label = QLabel("Open Main Door")
+        faceid_name_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center;")
+        faceid_name_label.setAlignment(Qt.AlignCenter)
+        faceid_layout.addWidget(faceid_name_label)
+
+        # Add Face ID Button (not toggle)
+        faceid_button_layout = QHBoxLayout()
+        faceid_button_layout.addStretch()
+        faceid_button = QPushButton("Verify")
+        faceid_button.setStyleSheet("""
+            QPushButton {
+                background-color: #ff7f50;
+                color: white;
+                border-radius: 10px;
+                padding: 8px 15px;
+                font-size: 14px;
+                font-weight: bold;
             }
-            AnimatedToggle::checked {
-                background-color: #001f3f;  /* Navy color for active state */
-            }
-            AnimatedToggle::unchecked {
-                background-color: #cccccc;  /* Gray color for inactive state */
+            QPushButton:hover {
+                background-color: #ff5722;
             }
         """)
-        gate_toggle.stateChanged.connect(self.handle_gate_toggle)  # Connect to a handler
-        gate_toggle_layout.addWidget(gate_toggle)
-        gate_toggle_layout.addStretch()
-        gate_layout.addLayout(gate_toggle_layout)
+        faceid_button.clicked.connect(self.handle_faceid_button)  # Connect to Face ID handler
+        faceid_button_layout.addWidget(faceid_button)
+        faceid_button_layout.addStretch()
+        faceid_layout.addLayout(faceid_button_layout)
 
-        # Add Gate Frame to Devices Layout
-        self.devices_layout.addWidget(gate_frame, 1, 0, 1, 2)  # Add Gate to the layout spanning 2 columns
-        self.device_frames["Gate"] = gate_frame
+        # Add Face ID Frame to Devices Layout
+        self.devices_layout.addWidget(faceid_frame, 1, 1)  # Place in row 1, column 1
+        self.device_frames["Face ID"] = faceid_frame
 
         main_layout.addLayout(self.devices_layout)
 
@@ -233,6 +273,24 @@ class SmartHomeApp(QMainWindow):
                         # Update the labels
                         self.temp_label.setText(f"Temperature: {temp}°C")
                         self.humidity_label.setText(f"Humidity: {humidity}%")
+                    
+                    # Add this code to handle garage door state messages
+                    elif "GarageState:" in line:
+                        state = line.split("GarageState:")[1].strip()
+                        # Update garage door toggle if it exists in the current view
+                        if "Garage Door" in self.device_frames:
+                            garage_frame = self.device_frames["Garage Door"]
+                            # Find the toggle button in the frame's layout
+                            for i in range(garage_frame.layout().count()):
+                                item = garage_frame.layout().itemAt(i)
+                                if isinstance(item, QHBoxLayout):
+                                    for j in range(item.count()):
+                                        widget = item.itemAt(j).widget()
+                                        if isinstance(widget, AnimatedToggle):
+                                            widget.blockSignals(True)  # Prevent toggle from sending commands
+                                            widget.setChecked(state == "OPEN")
+                                            widget.blockSignals(False)
+                                            break
             except Exception as e:
                 print(f"Error reading serial data: {e}")
 
@@ -244,13 +302,13 @@ class SmartHomeApp(QMainWindow):
                 QPushButton {
                     background-color: white;
                     color: black;
-                    border: 1px solid #001f3f;
+                    border: 1px solid #ff7f50;
                     border-radius: 10px;
                     padding: 15px;
                     text-align: center;
                 }
                 QPushButton:hover {
-                    background-color: #001f3f;
+                    background-color: #ff5722;
                 }
                 """
             )
@@ -259,15 +317,15 @@ class SmartHomeApp(QMainWindow):
         clicked_button.setStyleSheet(
             """
             QPushButton {
-                background-color: #001f3f;
+                background-color: #ff7f50;
                 color: white;
-                border: 1px solid #001f3f;
+                border: 1px solid #ff7f50;
                 border-radius: 10px;
                 padding: 15px;
                 text-align: center;
             }
             QPushButton:hover {
-                background-color: #001f3f;
+                background-color: #ff5722;
             }
             """
         )
@@ -284,6 +342,26 @@ class SmartHomeApp(QMainWindow):
             self.show_kitchen_functionalities()
         elif room_name == "Bedroom":
             self.show_bedroom_functionalities()
+    def handle_garage_door_toggle(self, state):
+        """Handle the toggle state of the Garage Door."""
+        if state:
+            print("Garage Door is now OPEN.")
+            # Send command to Arduino
+            if self.serial_port:
+                try:
+                    self.serial_port.write(b"OPENGARAGEDOOR\n")
+                    print("[SERIAL] Sent: OPENGARAGEDOOR")
+                except Exception as e:
+                    print(f"Error sending garage door command: {e}")
+        else:
+            print("Garage Door is now CLOSED.")
+            # Send command to Arduino
+            if self.serial_port:
+                try:
+                    self.serial_port.write(b"CLOSEGARAGEDOOR\n")  # Added missing newline
+                    print("[SERIAL] Sent: CLOSEGARAGEDOOR")
+                except Exception as e:
+                    print(f"Error sending garage door command: {e}")
 
     def show_garage_functionalities(self):
         """Display functionalities for the Garage."""
@@ -293,7 +371,7 @@ class SmartHomeApp(QMainWindow):
         if aircon_frame:
             # Create Garage Door Frame
             garage_door_frame = QFrame()
-            garage_door_frame.setStyleSheet("background-color: white; border: 1px solid #001f3f; border-radius: 10px;")
+            garage_door_frame.setStyleSheet("background-color: white; border: 1px solid #ddd; border-radius: 10px;")
             garage_door_layout = QVBoxLayout()
             garage_door_frame.setLayout(garage_door_layout)
 
@@ -306,12 +384,11 @@ class SmartHomeApp(QMainWindow):
             else:
                 garage_door_icon_label.setPixmap(garage_door_pixmap)
             garage_door_icon_label.setAlignment(Qt.AlignCenter)
-            garage_door_icon_label.setStyleSheet("background-color: #f0f0f0; border: 1px solid #001f3f; border-radius: 10px; padding: 5px;")
             garage_door_layout.addWidget(garage_door_icon_label)
 
             # Add Garage Door Name
             garage_door_name_label = QLabel("Garage Door")
-            garage_door_name_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center; color: #001f3f;")
+            garage_door_name_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center;")
             garage_door_name_label.setAlignment(Qt.AlignCenter)
             garage_door_layout.addWidget(garage_door_name_label)
 
@@ -320,18 +397,7 @@ class SmartHomeApp(QMainWindow):
             garage_door_toggle_layout.addStretch()
             garage_door_toggle = AnimatedToggle()
             garage_door_toggle.setFixedSize(50, 25)  # Match the size of the Bulb Lamp toggle
-            garage_door_toggle.setStyleSheet("""
-                AnimatedToggle {
-                background-color: #f0f0f0;  /* Background color */
-                border-radius: 12px;
-                }
-                AnimatedToggle::checked {
-                background-color: #001f3f;  /* Navy color for active state */
-                }
-                AnimatedToggle::unchecked {
-                background-color: #cccccc;  /* Gray color for inactive state */
-                }
-            """)    
+            garage_door_toggle.stateChanged.connect(self.handle_garage_door_toggle)  # Connect to a handler
             garage_door_toggle_layout.addWidget(garage_door_toggle)
             garage_door_toggle_layout.addStretch()
             garage_door_layout.addLayout(garage_door_toggle_layout)
@@ -348,6 +414,14 @@ class SmartHomeApp(QMainWindow):
             # Update the dictionary
             self.device_frames["Garage Door"] = garage_door_frame
             del self.device_frames["Air Conditioner"]
+            
+            # Request current garage door state
+            if self.serial_port:
+                try:
+                    self.serial_port.write(b"GET_STATE\n")
+                    print("[SERIAL] Requested garage door state")
+                except Exception as e:
+                    print(f"Error requesting device state: {e}")
 
     def show_living_room_functionalities(self):
         """Display functionalities for the Living Room."""
@@ -361,7 +435,7 @@ class SmartHomeApp(QMainWindow):
 
         # Recreate Air Conditioner
         aircon_frame = QFrame()
-        aircon_frame.setStyleSheet("background-color: white; border: 1px solid #001f3f; border-radius: 10px;")
+        aircon_frame.setStyleSheet("background-color: white; border: 1px solid #ddd; border-radius: 10px;")
         aircon_layout = QVBoxLayout()
         aircon_frame.setLayout(aircon_layout)
 
@@ -369,11 +443,10 @@ class SmartHomeApp(QMainWindow):
         aircon_pixmap = QPixmap(r"A:\College stuff\DATA AQ\GUI\icons\airconditioner.jpg").scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         aircon_icon_label.setPixmap(aircon_pixmap)
         aircon_icon_label.setAlignment(Qt.AlignCenter)
-        aircon_icon_label.setStyleSheet("background-color: #f0f0f0; border: 1px solid #001f3f; border-radius: 10px; padding: 5px;")
         aircon_layout.addWidget(aircon_icon_label)
 
         aircon_name_label = QLabel("Air Conditioner")
-        aircon_name_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center; color: #001f3f;")
+        aircon_name_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center;")
         aircon_name_label.setAlignment(Qt.AlignCenter)
         aircon_layout.addWidget(aircon_name_label)
 
@@ -389,7 +462,7 @@ class SmartHomeApp(QMainWindow):
 
         # Recreate Bulb Lamp
         bulb_frame = QFrame()
-        bulb_frame.setStyleSheet("background-color: white; border: 1px solid #001f3f; border-radius: 10px;")
+        bulb_frame.setStyleSheet("background-color: white; border: 1px solid #ddd; border-radius: 10px;")
         bulb_layout = QVBoxLayout()
         bulb_frame.setLayout(bulb_layout)
 
@@ -397,11 +470,10 @@ class SmartHomeApp(QMainWindow):
         bulb_pixmap = QPixmap(r"A:\College stuff\DATA AQ\GUI\icons\light.jpg").scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         bulb_icon_label.setPixmap(bulb_pixmap)
         bulb_icon_label.setAlignment(Qt.AlignCenter)
-        bulb_icon_label.setStyleSheet("background-color: #f0f0f0; border: 1px solid #001f3f; border-radius: 10px; padding: 5px;")
         bulb_layout.addWidget(bulb_icon_label)
 
         bulb_name_label = QLabel("Bulb Lamp")
-        bulb_name_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center; color: #001f3f;")
+        bulb_name_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center;")
         bulb_name_label.setAlignment(Qt.AlignCenter)
         bulb_layout.addWidget(bulb_name_label)
 
@@ -415,38 +487,81 @@ class SmartHomeApp(QMainWindow):
         self.devices_layout.addWidget(bulb_frame, 0, 1)
         self.device_frames["Bulb Lamp"] = bulb_frame
 
-        # Recreate Gate
-        gate_frame = QFrame()
-        gate_frame.setStyleSheet("background-color: #f0f0f0; border: 1px solid #001f3f; border-radius: 10px;")
-        gate_layout = QVBoxLayout()
-        gate_frame.setLayout(gate_layout)
+        # Recreate Gate 1
+        gate1_frame = QFrame()
+        gate1_frame.setStyleSheet("background-color: white; border: 1px solid #ddd; border-radius: 10px;")
+        gate1_layout = QVBoxLayout()
+        gate1_frame.setLayout(gate1_layout)
 
-        gate_icon_label = QLabel()
-        gate_pixmap = QPixmap(r"A:\College stuff\DATA AQ\GUI\icons\gate.jpg").scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        gate_icon_label.setPixmap(gate_pixmap)
-        gate_icon_label.setAlignment(Qt.AlignCenter)
-        gate_icon_label.setStyleSheet("background-color: #f0f0f0; border: 1px solid #001f3f; border-radius: 10px; padding: 5px;")
-        gate_layout.addWidget(gate_icon_label)
+        gate1_icon_label = QLabel()
+        gate1_pixmap = QPixmap(r"A:\College stuff\DATA AQ\GUI\icons\gate.jpg").scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        gate1_icon_label.setPixmap(gate1_pixmap)
+        gate1_icon_label.setAlignment(Qt.AlignCenter)
+        gate1_layout.addWidget(gate1_icon_label)
 
-        gate_name_label = QLabel("Gate")
-        gate_name_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center; color: #001f3f;")
-        gate_name_label.setAlignment(Qt.AlignCenter)
-        gate_layout.addWidget(gate_name_label)
+        gate1_name_label = QLabel("Gate")
+        gate1_name_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center;")
+        gate1_name_label.setAlignment(Qt.AlignCenter)
+        gate1_layout.addWidget(gate1_name_label)
 
-        # Add Gate Toggle Button
-        gate_toggle_layout = QHBoxLayout()
-        gate_toggle_layout.addStretch()
-        gate_toggle = AnimatedToggle()
-        gate_toggle.setFixedSize(50, 25)  # Match the size of other toggles
-        gate_toggle.setStyleSheet
-           
-        gate_toggle.stateChanged.connect(self.handle_gate_toggle)  # Connect to a handler
-        gate_toggle_layout.addWidget(gate_toggle)
-        gate_toggle_layout.addStretch()
-        gate_layout.addLayout(gate_toggle_layout)
+        # Add Gate 1 Toggle Button
+        gate1_toggle_layout = QHBoxLayout()
+        gate1_toggle_layout.addStretch()
+        gate1_toggle = AnimatedToggle()
+        gate1_toggle.setFixedSize(50, 25)
+        gate1_toggle.stateChanged.connect(lambda state: self.handle_gate_toggle(state, "Gate"))
+        gate1_toggle_layout.addWidget(gate1_toggle)
+        gate1_toggle_layout.addStretch()
+        gate1_layout.addLayout(gate1_toggle_layout)
 
-        self.devices_layout.addWidget(gate_frame, 1, 0, 1, 2)
-        self.device_frames["Gate"] = gate_frame
+        self.devices_layout.addWidget(gate1_frame, 1, 0)
+        self.device_frames["Gate 1"] = gate1_frame
+
+        # Recreate Face ID (replacing Gate 2)
+        faceid_frame = QFrame()
+        faceid_frame.setStyleSheet("background-color: white; border: 1px solid #ddd; border-radius: 10px;")
+        faceid_layout = QVBoxLayout()
+        faceid_frame.setLayout(faceid_layout)
+
+        faceid_icon_label = QLabel()
+        faceid_pixmap = QPixmap(r"A:\College stuff\DATA AQ\GUI\icons\FaceID.jpg").scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        if faceid_pixmap.isNull():
+            print("Error: Face ID image not found.")
+            faceid_icon_label.setText("No Image")
+        else:
+            faceid_icon_label.setPixmap(faceid_pixmap)
+        faceid_icon_label.setAlignment(Qt.AlignCenter)
+        faceid_layout.addWidget(faceid_icon_label)
+
+        faceid_name_label = QLabel("Open Main Door")
+        faceid_name_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center;")
+        faceid_name_label.setAlignment(Qt.AlignCenter)
+        faceid_layout.addWidget(faceid_name_label)
+
+        # Add Face ID Button (not toggle)
+        faceid_button_layout = QHBoxLayout()
+        faceid_button_layout.addStretch()
+        faceid_button = QPushButton("Verify")
+        faceid_button.setStyleSheet("""
+            QPushButton {
+                background-color: #ff7f50;
+                color: white;
+                border-radius: 10px;
+                padding: 8px 15px;
+                font-size: 14px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #ff5722;
+            }
+        """)
+        faceid_button.clicked.connect(self.handle_faceid_button)
+        faceid_button_layout.addWidget(faceid_button)
+        faceid_button_layout.addStretch()
+        faceid_layout.addLayout(faceid_button_layout)
+
+        self.devices_layout.addWidget(faceid_frame, 1, 1)
+        self.device_frames["Face ID"] = faceid_frame
 
     def show_kitchen_functionalities(self):
         """Display functionalities for the Kitchen."""
@@ -458,14 +573,54 @@ class SmartHomeApp(QMainWindow):
         print("Bedroom functionalities displayed.")
         # Add code here to update the UI for Bedroom-specific functionalities.
 
-    def handle_gate_toggle(self, state):
+    def handle_gate_toggle(self, state, gate_name="Gate"):
         """Handle the toggle state of the Gate."""
         if state:
-            print("Gate is now OPEN.")
+            print(f"{gate_name} is now OPEN.")
             # Add code to open the gate (e.g., send a signal to hardware)
+            if self.serial_port:
+                try:
+                    self.serial_port.write(b"OPEN_MAIN_GATE\n")
+                    print("[SERIAL] Sent: OPEN_MAIN_GATE")
+                except Exception as e:
+                    print(f"Error sending gate command: {e}")
+            
         else:
-            print("Gate is now CLOSED.")
+            print(f"{gate_name} is now CLOSED.")
             # Add code to close the gate (e.g., send a signal to hardware)
+            if self.serial_port:
+                try:
+                    self.serial_port.write(b"CLOSE_MAIN_GATE\n")
+                    print("[SERIAL] Sent: CLOSE_MAIN_GATE")
+                except Exception as e:
+                    print(f"Error sending gate command: {e}")
+
+    def handle_faceid_button(self):
+        """Handle the Face ID button click."""
+        print("Face ID scan initiated.")
+        
+        # Close the serial connection first
+        if self.serial_port:
+            self.serial_port.close()
+            self.serial_port = None
+        
+        try:
+            subprocess.run(["python", r"A:\College stuff\DATA AQ\face-recognition-app\src\main.py"])
+        except Exception as e:
+            print(f"Error running face recognition script: {e}")
+        
+        # Reopen the serial connection after main.py completes
+        for attempt in range(3):  # Try 3 times
+            try:
+                self.serial_port = serial.Serial('COM6', 9600, timeout=1)
+                print("Serial port reopened successfully")
+                break
+            except serial.SerialException:
+                print(f"Error: Could not reopen serial port (Attempt {attempt+1}/3)")
+                time.sleep(1)  # Wait a bit before retrying
+                
+        if self.serial_port is None:
+            print("Failed to reopen serial port after multiple attempts")
 
 
 if __name__ == "__main__":
