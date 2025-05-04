@@ -506,11 +506,80 @@ class SmartHomeApp(QMainWindow):
         """)
         backdoor_button.clicked.connect(self.handle_faceid_backdoor_button)
         backdoor_button_layout.addWidget(backdoor_button)
+        backdoor_button_layout.addStretch()
+        backdoor_layout.addLayout(backdoor_button_layout)
+
+        # Add to grid layout - position in row 1 (second row)
+        self.devices_layout.addWidget(backdoor_frame, 1, 1)  # Place in row 1, column 1
+        self.device_frames["Back Door"] = backdoor_frame
+
+        # Add Control Panel in the empty space (position 1,0)
+        control_frame = QFrame()
+        control_frame.setStyleSheet("background-color: white; border: 1px solid #ddd; border-radius: 10px;")
+        control_layout = QVBoxLayout()
+        control_frame.setLayout(control_layout)
         
-        # Add a small spacing between buttons
-        backdoor_button_layout.addSpacing(10)
+        # Add a title for this section
+        control_label = QLabel("Garage Controls")
+        control_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center;")
+        control_label.setAlignment(Qt.AlignCenter)
+        control_layout.addWidget(control_label)
         
-        # Add Close Back Door button
+        # Add control buttons
+        control_buttons_layout = QVBoxLayout()
+        
+        # Close Back Door button 
+        close_backdoor_button_layout = QHBoxLayout()  # Changed from "Close Back Door" to match other buttons
+        close_backdoor_button_layout.addStretch()
+        close_backdoor_button = QPushButton("Close Back Door")
+      
+        close_backdoor_button.setStyleSheet("""
+             QPushButton {
+                background-color: #ff7f50;
+                color: white;
+                border-radius: 10px;
+                padding: 8px 15px;
+                font-size: 14px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #ff5722;
+            }
+        """)
+        close_backdoor_button.clicked.connect(self.handle_close_backdoor_button)
+        control_buttons_layout.addWidget(close_backdoor_button)
+        
+        # You can add more control buttons here
+        
+        control_layout.addLayout(control_buttons_layout)
+        
+        # Add to grid layout at position (1,0)
+        self.devices_layout.addWidget(control_frame, 1, 0)
+        self.device_frames["Garage Controls"] = control_frame
+
+        # Create a dedicated Close Back Door frame (alternative approach)
+        close_backdoor_frame = QFrame()
+        close_backdoor_frame.setStyleSheet("background-color: white; border: 1px solid #ddd; border-radius: 10px;")
+        close_backdoor_layout = QVBoxLayout()
+        close_backdoor_frame.setLayout(close_backdoor_layout)
+
+        # Add the same icon
+        close_backdoor_icon_label = QLabel()
+        close_backdoor_pixmap = QPixmap(r"A:\College stuff\DATA AQ\GUI\icons\closedoor.jpg").scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        if not close_backdoor_pixmap.isNull():
+            close_backdoor_icon_label.setPixmap(close_backdoor_pixmap)
+        close_backdoor_icon_label.setAlignment(Qt.AlignCenter)
+        close_backdoor_layout.addWidget(close_backdoor_icon_label)
+
+        # Add Title
+        close_backdoor_name_label = QLabel("Close Back Door")
+        close_backdoor_name_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center;")
+        close_backdoor_name_label.setAlignment(Qt.AlignCenter)
+        close_backdoor_layout.addWidget(close_backdoor_name_label)
+
+        # Add button with styling
+        close_door_button_layout = QHBoxLayout()
+        close_door_button_layout.addStretch()
         close_backdoor_button = QPushButton("Close")
         close_backdoor_button.setStyleSheet("""
             QPushButton {
@@ -526,14 +595,13 @@ class SmartHomeApp(QMainWindow):
             }
         """)
         close_backdoor_button.clicked.connect(self.handle_close_backdoor_button)
-        backdoor_button_layout.addWidget(close_backdoor_button)
-        
-        backdoor_button_layout.addStretch()
-        backdoor_layout.addLayout(backdoor_button_layout)
+        close_door_button_layout.addWidget(close_backdoor_button)
+        close_door_button_layout.addStretch()
+        close_backdoor_layout.addLayout(close_door_button_layout)
 
-        # Add to grid layout - position in row 1 (second row)
-        self.devices_layout.addWidget(backdoor_frame, 1, 1)  # Place in row 1, column 1
-        self.device_frames["Back Door"] = backdoor_frame
+        # Replace entire control frame with this one
+        self.devices_layout.addWidget(close_backdoor_frame, 1, 0)
+        self.device_frames["Close Back Door"] = close_backdoor_frame
 
     def show_living_room_functionalities(self):
         """Display functionalities for the Living Room."""
