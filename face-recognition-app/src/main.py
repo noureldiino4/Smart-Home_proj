@@ -5,6 +5,7 @@ import numpy as np
 import cv2 as cv
 import face_recognition
 import serial
+import argparse  # Add this import
 
 # -----------------------------------------------------------------------------
 # CONFIGURATION
@@ -66,6 +67,12 @@ def main():
     known_encodings, known_names = load_known_faces(REFERENCE_IMAGE_PATHS, ENCODINGS_FILE)
     print(f"[INFO] References loaded: {known_names}")
 
+    # Add command line paremeter parsing
+    parser=argparse.ArgumentParser(description="Face Recognition door control")
+    parser.add_argument('--door', default='main', choices=['main', 'back'], help='Which door to control (main or back)')
+    args = parser.parse_args()
+
+
     # Serial (optional)
     try:
         ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1)
@@ -125,9 +132,15 @@ def main():
                     name = known_names[idx_min]
                     print(f"[INFO] Match found: {name}")
                     if ser:
-                        # Send a generic signal for any match
-                        ser.write(b"MATCH_FOUND\n")
-                        print(f"[SERIAL] Sent: MATCH_FOUND")
+                        # Check which door to control
+                        if args.door == 'back':
+                            ser.write(b"OPEN_BACK_DOOR\n",)
+                            print("[SERIAL] Sent: OPEN_BACK_DOOR")
+                            time.sleep(1)  # Wait for the door to open
+                        elif args.door == 'main':
+                            ser.write(b"MATCH_FOUND\n")
+                            print("[SERIAL] Sent: MATCH_FOUND")
+                            time.sleep(1)  # Add the same delay for main door
                     # Draw rectangle and label
                     cv.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)
                     cv.putText(frame, name, (left, top - 5), cv.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)

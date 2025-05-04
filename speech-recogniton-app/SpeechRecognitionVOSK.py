@@ -6,7 +6,7 @@ import serial
 
         # Initialize Serial Communication
 try:
-    serial_port = serial.Serial('COM3', 9600, timeout=1)  # Replace 'COM3' with your Arduino's port
+    serial_port = serial.Serial('COM6', 9600, timeout=1)  # Replace 'COM3' with your Arduino's port
 except serial.SerialException:
     print("Error: Could not open serial port.")
     serial_port = None
@@ -32,9 +32,9 @@ with sd.RawInputStream(samplerate=16000, blocksize=8000, dtype='int16',
         if recognizer.AcceptWaveform(data):
             result = json.loads(recognizer.Result())
             print("You said:", result.get("text", ""))
-            if serial_port and result.get("text", "").lower() == "close the back door":
-                serial_port.write("Close")
+            if serial_port and result.get("text", "").lower() == "close the gate":
+                serial_port.write("CLOSE_MAIN_GATE\n".encode())
                 print("Sent 'Close' to Arduino")
-            elif serial_port and result.get("text", "").lower() == "open the back door":
-                serial_port.write("Open")
+            elif serial_port and result.get("text", "").lower() == "open the gate":
+                serial_port.write("OPEN_MAIN_GATE\n".encode())
                 print("Sent 'Open' to Arduino")

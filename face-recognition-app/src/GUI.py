@@ -1,4 +1,6 @@
 import sys
+import time
+import numpy as np
 import serial  # For serial communication
 import subprocess  # For running external scripts
 from PyQt5.QtWidgets import (
@@ -74,7 +76,9 @@ class SmartHomeApp(QMainWindow):
             {"name": "Living Room", "icon": r"A:\College stuff\DATA AQ\GUI\icons\living-room.jpg"},
             {"name": "Kitchen", "icon": r"A:\College stuff\DATA AQ\GUI\icons\kitchen.jpg"},
             {"name": "Garage", "icon": r"A:\College stuff\DATA AQ\GUI\icons\garage.jpg"},
-            {"name": "Bedroom", "icon": r"A:\College stuff\DATA AQ\GUI\icons\bedroom.jpg"}
+            {"name": "Bedroom", "icon": r"A:\College stuff\DATA AQ\GUI\icons\bedroom.jpg"},
+            {"name": "Gym", "icon": r"A:\College stuff\DATA AQ\GUI\icons\gym.jpg"}
+
         ]
 
         self.active_room_button = None  # Track the currently active room button
@@ -156,11 +160,6 @@ class SmartHomeApp(QMainWindow):
             self.device_frames[device["name"]] = device_frame
 
             self.devices_layout.addWidget(device_frame, i // 2, i % 2)
-
-       
-
-        
-
         # Add Gate 1 Section
         gate1_frame = QFrame()
         gate1_frame.setStyleSheet("background-color: white; border: 1px solid #ddd; border-radius: 10px;")
@@ -182,7 +181,7 @@ class SmartHomeApp(QMainWindow):
         gate1_name_label = QLabel("Gate")
         gate1_name_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center;")
         gate1_name_label.setAlignment(Qt.AlignCenter)
-        gate1_layout.addWidget(gate1_name_label)
+        gate1_layout.addWidget(gate1_name_label)  # Correct - adds the name label
 
         # Add Gate 1 Toggle Button
         gate1_toggle_layout = QHBoxLayout()
@@ -238,8 +237,30 @@ class SmartHomeApp(QMainWindow):
                 background-color: #ff5722;
             }
         """)
-        faceid_button.clicked.connect(self.handle_faceid_button)  # Connect to Face ID handler
+        faceid_button.clicked.connect(self.handle_faceid_button)
         faceid_button_layout.addWidget(faceid_button)
+
+        # Add a small spacing between buttons
+        faceid_button_layout.addSpacing(10)
+
+        # Add Close Main Door button
+        close_maindoor_button = QPushButton("Close")
+        close_maindoor_button.setStyleSheet("""
+            QPushButton {
+                background-color: #ff5722;
+                color: white;
+                border-radius: 10px;
+                padding: 8px 15px;
+                font-size: 14px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #e64a19;
+            }
+        """)
+        close_maindoor_button.clicked.connect(self.handle_close_maindoor_button)
+        faceid_button_layout.addWidget(close_maindoor_button)
+
         faceid_button_layout.addStretch()
         faceid_layout.addLayout(faceid_button_layout)
 
@@ -342,6 +363,8 @@ class SmartHomeApp(QMainWindow):
             self.show_kitchen_functionalities()
         elif room_name == "Bedroom":
             self.show_bedroom_functionalities()
+        elif room_name == "Gym":
+            self.show_gym_functionalities()
     def handle_garage_door_toggle(self, state):
         """Handle the toggle state of the Garage Door."""
         if state:
@@ -365,63 +388,152 @@ class SmartHomeApp(QMainWindow):
 
     def show_garage_functionalities(self):
         """Display functionalities for the Garage."""
-        devices_layout = self.devices_layout
+        print("Garage functionalities displayed.")
+        
+        # Clear existing devices first
+        while self.devices_layout.count():
+            child = self.devices_layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
 
-        aircon_frame = self.device_frames.get("Air Conditioner")
-        if aircon_frame:
-            # Create Garage Door Frame
-            garage_door_frame = QFrame()
-            garage_door_frame.setStyleSheet("background-color: white; border: 1px solid #ddd; border-radius: 10px;")
-            garage_door_layout = QVBoxLayout()
-            garage_door_frame.setLayout(garage_door_layout)
+        self.device_frames.clear()  # Clear the device_frames dictionary
 
-            # Add Garage Door Photo
-            garage_door_icon_label = QLabel()
-            garage_door_pixmap = QPixmap(r"A:\College stuff\DATA AQ\GUI\icons\garage.jpg").scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-            if garage_door_pixmap.isNull():
-                print("Error: garage-door.jpg not found.")
-                garage_door_icon_label.setText("No Image")
-            else:
-                garage_door_icon_label.setPixmap(garage_door_pixmap)
-            garage_door_icon_label.setAlignment(Qt.AlignCenter)
-            garage_door_layout.addWidget(garage_door_icon_label)
+        # Create Garage Door Frame
+        garage_door_frame = QFrame()
+        garage_door_frame.setStyleSheet("background-color: white; border: 1px solid #ddd; border-radius: 10px;")
+        garage_door_layout = QVBoxLayout()
+        garage_door_frame.setLayout(garage_door_layout)
 
-            # Add Garage Door Name
-            garage_door_name_label = QLabel("Garage Door")
-            garage_door_name_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center;")
-            garage_door_name_label.setAlignment(Qt.AlignCenter)
-            garage_door_layout.addWidget(garage_door_name_label)
+        # Add Garage Door Photo
+        garage_door_icon_label = QLabel()
+        garage_door_pixmap = QPixmap(r"A:\College stuff\DATA AQ\GUI\icons\garage.jpg").scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        garage_door_icon_label.setPixmap(garage_door_pixmap)
+        garage_door_icon_label.setAlignment(Qt.AlignCenter)
+        garage_door_layout.addWidget(garage_door_icon_label)
 
-            # Add Garage Door Toggle Button
-            garage_door_toggle_layout = QHBoxLayout()
-            garage_door_toggle_layout.addStretch()
-            garage_door_toggle = AnimatedToggle()
-            garage_door_toggle.setFixedSize(50, 25)  # Match the size of the Bulb Lamp toggle
-            garage_door_toggle.stateChanged.connect(self.handle_garage_door_toggle)  # Connect to a handler
-            garage_door_toggle_layout.addWidget(garage_door_toggle)
-            garage_door_toggle_layout.addStretch()
-            garage_door_layout.addLayout(garage_door_toggle_layout)
+        # Add Garage Door Name
+        garage_door_name_label = QLabel("Garage Door")
+        garage_door_name_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center;")
+        garage_door_name_label.setAlignment(Qt.AlignCenter)
+        garage_door_layout.addWidget(garage_door_name_label)
 
-            # Replace frame in the layout
-            index = devices_layout.indexOf(aircon_frame)
-            row = index // 2  # Calculate the row
-            col = index % 2   # Calculate the column
-            devices_layout.removeWidget(aircon_frame)
-            aircon_frame.deleteLater()
+        # Add Garage Door Toggle Button
+        garage_door_toggle_layout = QHBoxLayout()
+        garage_door_toggle_layout.addStretch()
+        garage_door_toggle = AnimatedToggle()
+        garage_door_toggle.setFixedSize(50, 25)
+        garage_door_toggle.stateChanged.connect(self.handle_garage_door_toggle)
+        garage_door_toggle_layout.addWidget(garage_door_toggle)
+        garage_door_toggle_layout.addStretch()
+        garage_door_layout.addLayout(garage_door_toggle_layout)
 
-            devices_layout.addWidget(garage_door_frame, row, col)  # Use row and column
+        self.devices_layout.addWidget(garage_door_frame, 0, 0)
+        self.device_frames["Garage Door"] = garage_door_frame
 
-            # Update the dictionary
-            self.device_frames["Garage Door"] = garage_door_frame
-            del self.device_frames["Air Conditioner"]
-            
-            # Request current garage door state
-            if self.serial_port:
-                try:
-                    self.serial_port.write(b"GET_STATE\n")
-                    print("[SERIAL] Requested garage door state")
-                except Exception as e:
-                    print(f"Error requesting device state: {e}")
+        # Create Light Frame
+        light_frame = QFrame()
+        light_frame.setStyleSheet("background-color: white; border: 1px solid #ddd; border-radius: 10px;")
+        light_layout = QVBoxLayout()
+        light_frame.setLayout(light_layout)
+
+        light_icon_label = QLabel()
+        light_pixmap = QPixmap(r"A:\College stuff\DATA AQ\GUI\icons\light.jpg").scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        light_icon_label.setPixmap(light_pixmap)
+        light_icon_label.setAlignment(Qt.AlignCenter)
+        light_layout.addWidget(light_icon_label)
+
+        light_name_label = QLabel("Garage Light")
+        light_name_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center;")
+        light_name_label.setAlignment(Qt.AlignCenter)
+        light_layout.addWidget(light_name_label)
+
+        light_toggle_layout = QHBoxLayout()
+        light_toggle_layout.addStretch()
+        light_toggle = AnimatedToggle()
+        light_toggle.stateChanged.connect(self.handle_garage_light_toggle)  # Add this line
+        light_toggle_layout.addWidget(light_toggle)
+        light_toggle_layout.addStretch()
+        light_layout.addLayout(light_toggle_layout)
+
+        self.devices_layout.addWidget(light_frame, 0, 1)
+        self.device_frames["Garage Light"] = light_frame
+        
+        # Request current garage door state
+        if self.serial_port:
+            try:
+                self.serial_port.write(b"GET_STATE\n")
+                print("[SERIAL] Requested garage door state")
+            except Exception as e:
+                print(f"Error requesting device state: {e}")
+
+        # Add Back Door Face ID Section
+        backdoor_frame = QFrame()
+        backdoor_frame.setStyleSheet("background-color: white; border: 1px solid #ddd; border-radius: 10px;")
+        backdoor_layout = QVBoxLayout()
+        backdoor_frame.setLayout(backdoor_layout)
+
+        backdoor_icon_label = QLabel()
+        backdoor_pixmap = QPixmap(r"A:\College stuff\DATA AQ\GUI\icons\FaceID.jpg").scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        if backdoor_pixmap.isNull():
+            print("Error: Face ID image not found.")
+            backdoor_icon_label.setText("No Image")
+        else:
+            backdoor_icon_label.setPixmap(backdoor_pixmap)
+        backdoor_icon_label.setAlignment(Qt.AlignCenter)
+        backdoor_layout.addWidget(backdoor_icon_label)
+
+        backdoor_name_label = QLabel("Open Back Door")
+        backdoor_name_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center;")
+        backdoor_name_label.setAlignment(Qt.AlignCenter)
+        backdoor_layout.addWidget(backdoor_name_label)
+
+        # Add Back Door Face ID Button
+        backdoor_button_layout = QHBoxLayout()
+        backdoor_button_layout.addStretch()
+        backdoor_button = QPushButton("Verify")
+        backdoor_button.setStyleSheet("""
+            QPushButton {
+                background-color: #ff7f50;
+                color: white;
+                border-radius: 10px;
+                padding: 8px 15px;
+                font-size: 14px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #ff5722;
+            }
+        """)
+        backdoor_button.clicked.connect(self.handle_faceid_backdoor_button)
+        backdoor_button_layout.addWidget(backdoor_button)
+        
+        # Add a small spacing between buttons
+        backdoor_button_layout.addSpacing(10)
+        
+        # Add Close Back Door button
+        close_backdoor_button = QPushButton("Close")
+        close_backdoor_button.setStyleSheet("""
+            QPushButton {
+                background-color: #ff5722;
+                color: white;
+                border-radius: 10px;
+                padding: 8px 15px;
+                font-size: 14px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #e64a19;
+            }
+        """)
+        close_backdoor_button.clicked.connect(self.handle_close_backdoor_button)
+        backdoor_button_layout.addWidget(close_backdoor_button)
+        
+        backdoor_button_layout.addStretch()
+        backdoor_layout.addLayout(backdoor_button_layout)
+
+        # Add to grid layout - position in row 1 (second row)
+        self.devices_layout.addWidget(backdoor_frame, 1, 1)  # Place in row 1, column 1
+        self.device_frames["Back Door"] = backdoor_frame
 
     def show_living_room_functionalities(self):
         """Display functionalities for the Living Room."""
@@ -457,6 +569,8 @@ class SmartHomeApp(QMainWindow):
         aircon_toggle_layout.addStretch()
         aircon_layout.addLayout(aircon_toggle_layout)
 
+        aircon_toggle.stateChanged.connect(self.handle_living_room_aircon_toggle)
+
         self.devices_layout.addWidget(aircon_frame, 0, 0)
         self.device_frames["Air Conditioner"] = aircon_frame
 
@@ -484,6 +598,8 @@ class SmartHomeApp(QMainWindow):
         bulb_toggle_layout.addStretch()
         bulb_layout.addLayout(bulb_toggle_layout)
 
+        bulb_toggle.stateChanged.connect(self.handle_living_room_bulb_toggle)
+
         self.devices_layout.addWidget(bulb_frame, 0, 1)
         self.device_frames["Bulb Lamp"] = bulb_frame
 
@@ -502,7 +618,7 @@ class SmartHomeApp(QMainWindow):
         gate1_name_label = QLabel("Gate")
         gate1_name_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center;")
         gate1_name_label.setAlignment(Qt.AlignCenter)
-        gate1_layout.addWidget(gate1_name_label)
+        gate1_layout.addWidget(gate1_name_label)  # Correct - adds the name label
 
         # Add Gate 1 Toggle Button
         gate1_toggle_layout = QHBoxLayout()
@@ -557,6 +673,28 @@ class SmartHomeApp(QMainWindow):
         """)
         faceid_button.clicked.connect(self.handle_faceid_button)
         faceid_button_layout.addWidget(faceid_button)
+
+        # Add a small spacing between buttons
+        faceid_button_layout.addSpacing(10)
+
+        # Add Close Main Door button
+        close_maindoor_button = QPushButton("Close")
+        close_maindoor_button.setStyleSheet("""
+            QPushButton {
+                background-color: #ff5722;
+                color: white;
+                border-radius: 10px;
+                padding: 8px 15px;
+                font-size: 14px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #e64a19;
+            }
+        """)
+        close_maindoor_button.clicked.connect(self.handle_close_maindoor_button)
+        faceid_button_layout.addWidget(close_maindoor_button)
+
         faceid_button_layout.addStretch()
         faceid_layout.addLayout(faceid_button_layout)
 
@@ -566,12 +704,212 @@ class SmartHomeApp(QMainWindow):
     def show_kitchen_functionalities(self):
         """Display functionalities for the Kitchen."""
         print("Kitchen functionalities displayed.")
-        # Add code here to update the UI for Kitchen-specific functionalities.
+        
+        # Clear existing devices first
+        while self.devices_layout.count():
+            child = self.devices_layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
+
+        self.device_frames.clear()  # Clear the device_frames dictionary
+
+        # Create Air Conditioner Frame
+        aircon_frame = QFrame()
+        aircon_frame.setStyleSheet("background-color: white; border: 1px solid #ddd; border-radius: 10px;")
+        aircon_layout = QVBoxLayout()
+        aircon_frame.setLayout(aircon_layout)
+
+        aircon_icon_label = QLabel()
+        aircon_pixmap = QPixmap(r"A:\College stuff\DATA AQ\GUI\icons\airconditioner.jpg").scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        aircon_icon_label.setPixmap(aircon_pixmap)
+        aircon_icon_label.setAlignment(Qt.AlignCenter)
+        aircon_layout.addWidget(aircon_icon_label)
+
+        aircon_name_label = QLabel("Air Conditioner")
+        aircon_name_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center;")
+        aircon_name_label.setAlignment(Qt.AlignCenter)
+        aircon_layout.addWidget(aircon_name_label)
+
+        aircon_toggle_layout = QHBoxLayout()
+        aircon_toggle_layout.addStretch()
+        aircon_toggle = AnimatedToggle()
+        aircon_toggle_layout.addWidget(aircon_toggle)
+        aircon_toggle_layout.addStretch()
+        aircon_layout.addLayout(aircon_toggle_layout)
+
+        aircon_toggle.stateChanged.connect(self.handle_kitchen_aircon_toggle)
+
+        self.devices_layout.addWidget(aircon_frame, 0, 0)
+        self.device_frames["Air Conditioner"] = aircon_frame
+
+        # Create Bulb Lamp Frame
+        bulb_frame = QFrame()
+        bulb_frame.setStyleSheet("background-color: white; border: 1px solid #ddd; border-radius: 10px;")
+        bulb_layout = QVBoxLayout()
+        bulb_frame.setLayout(bulb_layout)
+
+        bulb_icon_label = QLabel()
+        bulb_pixmap = QPixmap(r"A:\College stuff\DATA AQ\GUI\icons\light.jpg").scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        bulb_icon_label.setPixmap(bulb_pixmap)
+        bulb_icon_label.setAlignment(Qt.AlignCenter)
+        bulb_layout.addWidget(bulb_icon_label)
+
+        bulb_name_label = QLabel("Bulb Lamp")
+        bulb_name_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center;")
+        bulb_name_label.setAlignment(Qt.AlignCenter)
+        bulb_layout.addWidget(bulb_name_label)
+
+        bulb_toggle_layout = QHBoxLayout()
+        bulb_toggle_layout.addStretch()
+        bulb_toggle = AnimatedToggle()
+        bulb_toggle_layout.addWidget(bulb_toggle)
+        bulb_toggle_layout.addStretch()
+        bulb_layout.addLayout(bulb_toggle_layout)
+
+        bulb_toggle.stateChanged.connect(self.handle_kitchen_bulb_toggle)
+
+        self.devices_layout.addWidget(bulb_frame, 0, 1)
+        self.device_frames["Bulb Lamp"] = bulb_frame
 
     def show_bedroom_functionalities(self):
         """Display functionalities for the Bedroom."""
         print("Bedroom functionalities displayed.")
-        # Add code here to update the UI for Bedroom-specific functionalities.
+        
+        # Clear existing devices first
+        while self.devices_layout.count():
+            child = self.devices_layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
+
+        self.device_frames.clear()  # Clear the device_frames dictionary
+
+        # Create Air Conditioner Frame
+        aircon_frame = QFrame()
+        aircon_frame.setStyleSheet("background-color: white; border: 1px solid #ddd; border-radius: 10px;")
+        aircon_layout = QVBoxLayout()
+        aircon_frame.setLayout(aircon_layout)
+
+        aircon_icon_label = QLabel()
+        aircon_pixmap = QPixmap(r"A:\College stuff\DATA AQ\GUI\icons\airconditioner.jpg").scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        aircon_icon_label.setPixmap(aircon_pixmap)
+        aircon_icon_label.setAlignment(Qt.AlignCenter)
+        aircon_layout.addWidget(aircon_icon_label)
+
+        aircon_name_label = QLabel("Air Conditioner")
+        aircon_name_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center;")
+        aircon_name_label.setAlignment(Qt.AlignCenter)
+        aircon_layout.addWidget(aircon_name_label)
+
+        aircon_toggle_layout = QHBoxLayout()
+        aircon_toggle_layout.addStretch()
+        aircon_toggle = AnimatedToggle()
+        aircon_toggle_layout.addWidget(aircon_toggle)
+        aircon_toggle_layout.addStretch()
+        aircon_layout.addLayout(aircon_toggle_layout)
+
+        aircon_toggle.stateChanged.connect(self.handle_bedroom_aircon_toggle)
+
+        self.devices_layout.addWidget(aircon_frame, 0, 0)
+        self.device_frames["Air Conditioner"] = aircon_frame
+
+        # Create Bulb Lamp Frame
+        bulb_frame = QFrame()
+        bulb_frame.setStyleSheet("background-color: white; border: 1px solid #ddd; border-radius: 10px;")
+        bulb_layout = QVBoxLayout()
+        bulb_frame.setLayout(bulb_layout)
+
+        bulb_icon_label = QLabel()
+        bulb_pixmap = QPixmap(r"A:\College stuff\DATA AQ\GUI\icons\light.jpg").scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        bulb_icon_label.setPixmap(bulb_pixmap)
+        bulb_icon_label.setAlignment(Qt.AlignCenter)
+        bulb_layout.addWidget(bulb_icon_label)
+
+        bulb_name_label = QLabel("Bulb Lamp")
+        bulb_name_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center;")
+        bulb_name_label.setAlignment(Qt.AlignCenter)
+        bulb_layout.addWidget(bulb_name_label)
+
+        bulb_toggle_layout = QHBoxLayout()
+        bulb_toggle_layout.addStretch()
+        bulb_toggle = AnimatedToggle()
+        bulb_toggle_layout.addWidget(bulb_toggle)
+        bulb_toggle_layout.addStretch()
+        bulb_layout.addLayout(bulb_toggle_layout)
+
+        bulb_toggle.stateChanged.connect(self.handle_bedroom_bulb_toggle)
+
+        self.devices_layout.addWidget(bulb_frame, 0, 1)
+        self.device_frames["Bulb Lamp"] = bulb_frame
+
+    def show_gym_functionalities(self):
+        """Display functionalities for the Gym."""
+        print("Gym functionalities displayed.")
+        
+        # Clear existing devices first
+        while self.devices_layout.count():
+            child = self.devices_layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
+
+        self.device_frames.clear()  # Clear the device_frames dictionary
+
+        # Create Air Conditioner Frame
+        aircon_frame = QFrame()
+        aircon_frame.setStyleSheet("background-color: white; border: 1px solid #ddd; border-radius: 10px;")
+        aircon_layout = QVBoxLayout()
+        aircon_frame.setLayout(aircon_layout)
+
+        aircon_icon_label = QLabel()
+        aircon_pixmap = QPixmap(r"A:\College stuff\DATA AQ\GUI\icons\airconditioner.jpg").scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        aircon_icon_label.setPixmap(aircon_pixmap)
+        aircon_icon_label.setAlignment(Qt.AlignCenter)
+        aircon_layout.addWidget(aircon_icon_label)
+
+        aircon_name_label = QLabel("Air Conditioner")
+        aircon_name_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center;")
+        aircon_name_label.setAlignment(Qt.AlignCenter)
+        aircon_layout.addWidget(aircon_name_label)
+
+        aircon_toggle_layout = QHBoxLayout()
+        aircon_toggle_layout.addStretch()
+        aircon_toggle = AnimatedToggle()
+        aircon_toggle_layout.addWidget(aircon_toggle)
+        aircon_toggle_layout.addStretch()
+        aircon_layout.addLayout(aircon_toggle_layout)
+
+        aircon_toggle.stateChanged.connect(self.handle_gym_aircon_toggle)
+
+        self.devices_layout.addWidget(aircon_frame, 0, 0)
+        self.device_frames["Air Conditioner"] = aircon_frame
+
+        # Create Bulb Lamp Frame
+        bulb_frame = QFrame()
+        bulb_frame.setStyleSheet("background-color: white; border: 1px solid #ddd; border-radius: 10px;")
+        bulb_layout = QVBoxLayout()
+        bulb_frame.setLayout(bulb_layout)
+
+        bulb_icon_label = QLabel()
+        bulb_pixmap = QPixmap(r"A:\College stuff\DATA AQ\GUI\icons\light.jpg").scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        bulb_icon_label.setPixmap(bulb_pixmap)
+        bulb_icon_label.setAlignment(Qt.AlignCenter)
+        bulb_layout.addWidget(bulb_icon_label)
+
+        bulb_name_label = QLabel("Bulb Lamp")
+        bulb_name_label.setStyleSheet("font-size: 18px; font-weight: bold; text-align: center;")
+        bulb_name_label.setAlignment(Qt.AlignCenter)
+        bulb_layout.addWidget(bulb_name_label)
+
+        bulb_toggle_layout = QHBoxLayout()
+        bulb_toggle_layout.addStretch()
+        bulb_toggle = AnimatedToggle()
+        bulb_toggle_layout.addWidget(bulb_toggle)
+        bulb_toggle_layout.addStretch()
+        bulb_layout.addLayout(bulb_toggle_layout)
+
+        bulb_toggle.stateChanged.connect(self.handle_gym_bulb_toggle)
+
+        self.devices_layout.addWidget(bulb_frame, 0, 1)
+        self.device_frames["Bulb Lamp"] = bulb_frame
 
     def handle_gate_toggle(self, state, gate_name="Gate"):
         """Handle the toggle state of the Gate."""
@@ -622,6 +960,224 @@ class SmartHomeApp(QMainWindow):
         if self.serial_port is None:
             print("Failed to reopen serial port after multiple attempts")
 
+    def handle_kitchen_aircon_toggle(self, state):
+        """Handle the toggle state of the Kitchen Air Conditioner."""
+        if state:
+            print("Kitchen Air Conditioner is now ON.")
+            if self.serial_port:
+                try:
+                    self.serial_port.write(b"AIRCON_ON\n")
+                    print("[SERIAL] Sent: KITCHEN_AIRCON_ON")
+                except Exception as e:
+                    print(f"Error sending kitchen aircon command: {e}")
+        else:
+            print("Kitchen Air Conditioner is now OFF.")
+            if self.serial_port:
+                try:
+                    self.serial_port.write(b"AIRCON_OFF\n")
+                    print("[SERIAL] Sent: KITCHEN_AIRCON_OFF")
+                except Exception as e:
+                    print(f"Error sending kitchen aircon command: {e}")
+
+    def handle_kitchen_bulb_toggle(self, state):
+        """Handle the toggle state of the Kitchen Bulb Lamp."""
+        if state:
+            print("Kitchen Bulb Lamp is now ON.")
+            if self.serial_port:
+                try:
+                    self.serial_port.write(b"KITCHEN_BULB_ON\n")
+                    print("[SERIAL] Sent: KITCHEN_BULB_ON")
+                except Exception as e:
+                    print(f"Error sending kitchen bulb command: {e}")
+        else:
+            print("Kitchen Bulb Lamp is now OFF.")
+            if self.serial_port:
+                try:
+                    self.serial_port.write(b"KITCHEN_BULB_OFF\n")
+                    print("[SERIAL] Sent: KITCHEN_BULB_OFF")
+                except Exception as e:
+                    print(f"Error sending kitchen bulb command: {e}")
+
+    def handle_bedroom_aircon_toggle(self, state):
+        """Handle the toggle state of the Bedroom Air Conditioner."""
+        if state:
+            print("Bedroom Air Conditioner is now ON.")
+            if self.serial_port:
+                try:
+                    self.serial_port.write(b"AIRCON_ON\n")
+                    print("[SERIAL] Sent: BEDROOM_AIRCON_ON")
+                except Exception as e:
+                    print(f"Error sending bedroom aircon command: {e}")
+        else:
+            print("Bedroom Air Conditioner is now OFF.")
+            if self.serial_port:
+                try:
+                    self.serial_port.write(b"AIRCON_OFF\n")
+                    print("[SERIAL] Sent: BEDROOM_AIRCON_OFF")
+                except Exception as e:
+                    print(f"Error sending bedroom aircon command: {e}")
+
+    def handle_bedroom_bulb_toggle(self, state):
+        """Handle the toggle state of the Bedroom Bulb Lamp."""
+        if state:
+            print("Bedroom Bulb Lamp is now ON.")
+            if self.serial_port:
+                try:
+                    self.serial_port.write(b"BEDROOM_BULB_ON\n")
+                    print("[SERIAL] Sent: BEDROOM_BULB_ON")
+                except Exception as e:
+                    print(f"Error sending bedroom bulb command: {e}")
+        else:
+            print("Bedroom Bulb Lamp is now OFF.")
+            if self.serial_port:
+                try:
+                    self.serial_port.write(b"BEDROOM_BULB_OFF\n")
+                    print("[SERIAL] Sent: BEDROOM_BULB_OFF")
+                except Exception as e:
+                    print(f"Error sending bedroom bulb command: {e}")
+
+    def handle_gym_aircon_toggle(self, state):
+        """Handle the toggle state of the Gym Air Conditioner."""
+        if state:
+            print("Gym Air Conditioner is now ON.")
+            if self.serial_port:
+                try:
+                    self.serial_port.write(b"AIRCON_ON\n")
+                    print("[SERIAL] Sent: GYM_AIRCON_ON")
+                except Exception as e:
+                    print(f"Error sending gym aircon command: {e}")
+        else:
+            print("Gym Air Conditioner is now OFF.")
+            if self.serial_port:
+                try:
+                    self.serial_port.write(b"AIRCON_OFF\n")
+                    print("[SERIAL] Sent: GYM_AIRCON_OFF")
+                except Exception as e:
+                    print(f"Error sending gym aircon command: {e}")
+
+    def handle_gym_bulb_toggle(self, state):
+        """Handle the toggle state of the Gym Bulb Lamp."""
+        if state:
+            print("Gym Bulb Lamp is now ON.")
+            if self.serial_port:
+                try:
+                    self.serial_port.write(b"GYM_BULB_ON\n")
+                    print("[SERIAL] Sent: GYM_BULB_ON")
+                except Exception as e:
+                    print(f"Error sending gym bulb command: {e}")
+        else:
+            print("Gym Bulb Lamp is now OFF.")
+            if self.serial_port:
+                try:
+                    self.serial_port.write(b"GYM_BULB_OFF\n")
+                    print("[SERIAL] Sent: GYM_BULB_OFF")
+                except Exception as e:
+                    print(f"Error sending gym bulb command: {e}")
+
+    def handle_faceid_backdoor_button(self):
+        """Handle the Face ID Back Door button click."""
+        print("Face ID scan for back door initiated.")
+        
+        # Close the serial connection first
+        if self.serial_port:
+            self.serial_port.close()
+            self.serial_port = None
+        
+        try:
+            # Run face recognition with a parameter to indicate back door
+            subprocess.run(["python", r"A:\College stuff\DATA AQ\face-recognition-app\src\main.py", "--door=back"])
+        except Exception as e:
+            print(f"Error running face recognition script: {e}")
+        
+        # Reopen the serial connection after main.py completes
+        for attempt in range(3):  # Try 3 times
+            try:
+                self.serial_port = serial.Serial('COM6', 9600, timeout=1)
+                print("Serial port reopened successfully")
+                break
+            except serial.SerialException:
+                print(f"Error: Could not reopen serial port (Attempt {attempt+1}/3)")
+                time.sleep(1)  # Wait a bit before retrying
+                
+        if self.serial_port is None:
+            print("Failed to reopen serial port after multiple attempts")
+
+    def handle_close_backdoor_button(self):
+        """Handle the Close Back Door button click."""
+        print("Closing back door...")
+        if self.serial_port:
+            try:
+                self.serial_port.write(b"CLOSE_BACK_DOOR\n")
+                print("[SERIAL] Sent: CLOSE_BACK_DOOR")
+            except Exception as e:
+                print(f"Error sending close back door command: {e}")
+
+    def handle_close_maindoor_button(self):
+        """Handle the Close Main Door button click."""
+        print("Closing main door...")
+        if self.serial_port:
+            try:
+                self.serial_port.write(b"CLOSE_MAIN_DOOR\n")
+                print("[SERIAL] Sent: CLOSE_MAIN_DOOR")
+            except Exception as e:
+                print(f"Error sending close main door command: {e}")
+
+    def handle_living_room_aircon_toggle(self, state):
+        """Handle the toggle state of the Living Room Air Conditioner."""
+        if state:
+            print("Living Room Air Conditioner is now ON.")
+            if self.serial_port:
+                try:
+                    self.serial_port.write(b"AIRCON_ON\n")
+                    print("[SERIAL] Sent: LIVING_ROOM_AIRCON_ON")
+                except Exception as e:
+                    print(f"Error sending living room aircon command: {e}")
+        else:
+            print("Living Room Air Conditioner is now OFF.")
+            if self.serial_port:
+                try:
+                    self.serial_port.write(b"AIRCON_OFF\n")
+                    print("[SERIAL] Sent: LIVING_ROOM_AIRCON_OFF")
+                except Exception as e:
+                    print(f"Error sending living room aircon command: {e}")
+
+    def handle_living_room_bulb_toggle(self, state):
+        """Handle the toggle state of the Living Room Bulb Lamp."""
+        if state:
+            print("Living Room Bulb Lamp is now ON.")
+            if self.serial_port:
+                try:
+                    self.serial_port.write(b"LIVING_ROOM_BULB_ON\n")
+                    print("[SERIAL] Sent: LIVING_ROOM_BULB_ON")
+                except Exception as e:
+                    print(f"Error sending living room bulb command: {e}")
+        else:
+            print("Living Room Bulb Lamp is now OFF.")
+            if self.serial_port:
+                try:
+                    self.serial_port.write(b"LIVING_ROOM_BULB_OFF\n")
+                    print("[SERIAL] Sent: LIVING_ROOM_BULB_OFF")
+                except Exception as e:
+                    print(f"Error sending living room bulb command: {e}")
+
+    def handle_garage_light_toggle(self, state):
+        """Handle the toggle state of the Garage Light."""
+        if state:
+            print("Garage Light is now ON.")
+            if self.serial_port:
+                try:
+                    self.serial_port.write(b"GARAGE_LIGHT_ON\n")
+                    print("[SERIAL] Sent: GARAGE_LIGHT_ON")
+                except Exception as e:
+                    print(f"Error sending garage light command: {e}")
+        else:
+            print("Garage Light is now OFF.")
+            if self.serial_port:
+                try:
+                    self.serial_port.write(b"GARAGE_LIGHT_OFF\n")
+                    print("[SERIAL] Sent: GARAGE_LIGHT_OFF")
+                except Exception as e:
+                    print(f"Error sending garage light command: {e}")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
