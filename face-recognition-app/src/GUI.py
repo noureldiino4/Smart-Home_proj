@@ -133,6 +133,18 @@ class SmartHomeApp(QMainWindow):
         ]
 
         self.device_frames = {}  # Save device frames here!
+        self.device_states = {
+            "LIVING_ROOM_BULB": False,
+            "KITCHEN_BULB": False,
+            "BEDROOM_BULB": False,
+            "GARAGE_LIGHT": False,
+            "GYM_BULB": False,
+            "LIVING_ROOM_AIRCON": False,
+            "KITCHEN_AIRCON": False,
+            "BEDROOM_AIRCON": False,
+            "GYM_AIRCON": False,
+            "GATE": False
+        }
 
         for i, device in enumerate(devices):
             device_frame = QFrame()
@@ -192,6 +204,7 @@ class SmartHomeApp(QMainWindow):
         gate1_toggle_layout = QHBoxLayout()
         gate1_toggle_layout.addStretch()
         gate1_toggle = AnimatedToggle()
+        gate1_toggle.setChecked(self.device_states["GATE"])  # Add this
         gate1_toggle.setFixedSize(50, 25)
         gate1_toggle.stateChanged.connect(lambda state: self.handle_gate_toggle(state, "Gate"))  # Connect to a handler
         gate1_toggle_layout.addWidget(gate1_toggle)
@@ -433,6 +446,7 @@ class SmartHomeApp(QMainWindow):
         garage_door_toggle_layout = QHBoxLayout()
         garage_door_toggle_layout.addStretch()
         garage_door_toggle = AnimatedToggle()
+        garage_door_toggle.setChecked(self.device_states.get("GARAGE_DOOR", False))  # Add this
         garage_door_toggle.setFixedSize(50, 25)
         garage_door_toggle.stateChanged.connect(self.handle_garage_door_toggle)
         garage_door_toggle_layout.addWidget(garage_door_toggle)
@@ -462,6 +476,7 @@ class SmartHomeApp(QMainWindow):
         light_toggle_layout = QHBoxLayout()
         light_toggle_layout.addStretch()
         light_toggle = AnimatedToggle()
+        light_toggle.setChecked(self.device_states["GARAGE_LIGHT"])  # Add this
         light_toggle.stateChanged.connect(self.handle_garage_light_toggle)  # Add this line
         light_toggle_layout.addWidget(light_toggle)
         light_toggle_layout.addStretch()
@@ -645,6 +660,7 @@ class SmartHomeApp(QMainWindow):
         aircon_toggle_layout = QHBoxLayout()
         aircon_toggle_layout.addStretch()
         aircon_toggle = AnimatedToggle()
+        aircon_toggle.setChecked(self.device_states["LIVING_ROOM_AIRCON"])  # Add this
         aircon_toggle_layout.addWidget(aircon_toggle)
         aircon_toggle_layout.addStretch()
         aircon_layout.addLayout(aircon_toggle_layout)
@@ -674,6 +690,7 @@ class SmartHomeApp(QMainWindow):
         bulb_toggle_layout = QHBoxLayout()
         bulb_toggle_layout.addStretch()
         bulb_toggle = AnimatedToggle()
+        bulb_toggle.setChecked(self.device_states["LIVING_ROOM_BULB"])  # Add this line
         bulb_toggle_layout.addWidget(bulb_toggle)
         bulb_toggle_layout.addStretch()
         bulb_layout.addLayout(bulb_toggle_layout)
@@ -704,6 +721,7 @@ class SmartHomeApp(QMainWindow):
         gate1_toggle_layout = QHBoxLayout()
         gate1_toggle_layout.addStretch()
         gate1_toggle = AnimatedToggle()
+        gate1_toggle.setChecked(self.device_states["GATE"])  # Add this
         gate1_toggle.setFixedSize(50, 25)
         gate1_toggle.stateChanged.connect(lambda state: self.handle_gate_toggle(state, "Gate"))
         gate1_toggle_layout.addWidget(gate1_toggle)
@@ -813,6 +831,7 @@ class SmartHomeApp(QMainWindow):
         aircon_toggle_layout = QHBoxLayout()
         aircon_toggle_layout.addStretch()
         aircon_toggle = AnimatedToggle()
+        aircon_toggle.setChecked(self.device_states["KITCHEN_AIRCON"])  # Add this
         aircon_toggle_layout.addWidget(aircon_toggle)
         aircon_toggle_layout.addStretch()
         aircon_layout.addLayout(aircon_toggle_layout)
@@ -842,6 +861,7 @@ class SmartHomeApp(QMainWindow):
         bulb_toggle_layout = QHBoxLayout()
         bulb_toggle_layout.addStretch()
         bulb_toggle = AnimatedToggle()
+        bulb_toggle.setChecked(self.device_states["KITCHEN_BULB"])  # Add this
         bulb_toggle_layout.addWidget(bulb_toggle)
         bulb_toggle_layout.addStretch()
         bulb_layout.addLayout(bulb_toggle_layout)
@@ -883,6 +903,7 @@ class SmartHomeApp(QMainWindow):
         aircon_toggle_layout = QHBoxLayout()
         aircon_toggle_layout.addStretch()
         aircon_toggle = AnimatedToggle()
+        aircon_toggle.setChecked(self.device_states["BEDROOM_AIRCON"])  # Add this
         aircon_toggle_layout.addWidget(aircon_toggle)
         aircon_toggle_layout.addStretch()
         aircon_layout.addLayout(aircon_toggle_layout)
@@ -912,6 +933,7 @@ class SmartHomeApp(QMainWindow):
         bulb_toggle_layout = QHBoxLayout()
         bulb_toggle_layout.addStretch()
         bulb_toggle = AnimatedToggle()
+        bulb_toggle.setChecked(self.device_states["BEDROOM_BULB"])  # Add this
         bulb_toggle_layout.addWidget(bulb_toggle)
         bulb_toggle_layout.addStretch()
         bulb_layout.addLayout(bulb_toggle_layout)
@@ -953,6 +975,7 @@ class SmartHomeApp(QMainWindow):
         aircon_toggle_layout = QHBoxLayout()
         aircon_toggle_layout.addStretch()
         aircon_toggle = AnimatedToggle()
+        aircon_toggle.setChecked(self.device_states["GYM_AIRCON"])  # Add this
         aircon_toggle_layout.addWidget(aircon_toggle)
         aircon_toggle_layout.addStretch()
         aircon_layout.addLayout(aircon_toggle_layout)
@@ -982,6 +1005,7 @@ class SmartHomeApp(QMainWindow):
         bulb_toggle_layout = QHBoxLayout()
         bulb_toggle_layout.addStretch()
         bulb_toggle = AnimatedToggle()
+        bulb_toggle.setChecked(self.device_states["GYM_BULB"])  # Add this
         bulb_toggle_layout.addWidget(bulb_toggle)
         bulb_toggle_layout.addStretch()
         bulb_layout.addLayout(bulb_toggle_layout)
@@ -1042,6 +1066,7 @@ class SmartHomeApp(QMainWindow):
 
     def handle_kitchen_aircon_toggle(self, state):
         """Handle the toggle state of the Kitchen Air Conditioner."""
+        self.device_states["KITCHEN_AIRCON"] = state  # Update the state in the dictionary
         if state:
             print("Kitchen Air Conditioner is now ON.")
             if self.serial_port:
@@ -1061,6 +1086,7 @@ class SmartHomeApp(QMainWindow):
 
     def handle_kitchen_bulb_toggle(self, state):
         """Handle the toggle state of the Kitchen Bulb Lamp."""
+        self.device_states["KITCHEN_BULB"] = state  # Update the state in the dictionary
         if state:
             print("Kitchen Bulb Lamp is now ON.")
             if self.serial_port:
@@ -1080,6 +1106,7 @@ class SmartHomeApp(QMainWindow):
 
     def handle_bedroom_aircon_toggle(self, state):
         """Handle the toggle state of the Bedroom Air Conditioner."""
+        self.device_states["BEDROOM_AIRCON"] = state  # Update the state in the dictionary
         if state:
             print("Bedroom Air Conditioner is now ON.")
             if self.serial_port:
@@ -1099,6 +1126,7 @@ class SmartHomeApp(QMainWindow):
 
     def handle_bedroom_bulb_toggle(self, state):
         """Handle the toggle state of the Bedroom Bulb Lamp."""
+        self.device_states["BEDROOM_BULB"] = state  # Update the state in the dictionary
         if state:
             print("Bedroom Bulb Lamp is now ON.")
             if self.serial_port:
@@ -1118,6 +1146,7 @@ class SmartHomeApp(QMainWindow):
 
     def handle_gym_aircon_toggle(self, state):
         """Handle the toggle state of the Gym Air Conditioner."""
+        self.device_states["GYM_AIRCON"] = state  # Update the state in the dictionary
         if state:
             print("Gym Air Conditioner is now ON.")
             if self.serial_port:
@@ -1137,6 +1166,7 @@ class SmartHomeApp(QMainWindow):
 
     def handle_gym_bulb_toggle(self, state):
         """Handle the toggle state of the Gym Bulb Lamp."""
+        self.device_states["GYM_BULB"] = state  # Update the state in the dictionary
         if state:
             print("Gym Bulb Lamp is now ON.")
             if self.serial_port:
@@ -1156,6 +1186,7 @@ class SmartHomeApp(QMainWindow):
 
     def handle_faceid_backdoor_button(self):
         """Handle the Face ID Back Door button click."""
+
         print("Face ID scan for back door initiated.")
         
         # Close the serial connection first
@@ -1204,6 +1235,7 @@ class SmartHomeApp(QMainWindow):
 
     def handle_living_room_aircon_toggle(self, state):
         """Handle the toggle state of the Living Room Air Conditioner."""
+        self.device_states["LIVING_ROOM_AIRCON"] = state  # Add this line
         if state:
             print("Living Room Air Conditioner is now ON.")
             if self.serial_port:
@@ -1223,6 +1255,7 @@ class SmartHomeApp(QMainWindow):
 
     def handle_living_room_bulb_toggle(self, state):
         """Handle the toggle state of the Living Room Bulb Lamp."""
+        self.device_states["LIVING_ROOM_BULB"] = state  # Add this line
         if state:
             print("Living Room Bulb Lamp is now ON.")
             if self.serial_port:
@@ -1242,6 +1275,7 @@ class SmartHomeApp(QMainWindow):
 
     def handle_garage_light_toggle(self, state):
         """Handle the toggle state of the Garage Light."""
+        self.device_states["GARAGE_LIGHT"] = state  # Update the state in the dictionary
         if state:
             print("Garage Light is now ON.")
             if self.serial_port:
