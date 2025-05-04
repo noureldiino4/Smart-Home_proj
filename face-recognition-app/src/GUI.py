@@ -3,6 +3,11 @@ import time
 import numpy as np
 import serial  # For serial communication
 import subprocess  # For running external scripts
+import sounddevice as sd
+import queue
+import json
+import threading
+from vosk import Model, KaldiRecognizer
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
     QWidget, QGridLayout, QFrame
@@ -274,6 +279,13 @@ class SmartHomeApp(QMainWindow):
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_sensor_data)
         self.timer.start(2000)  # Update every 2 seconds
+
+        # Initialize speech recognition in a background thread
+        self.speech_queue = queue.Queue()
+        self.speech_running = True
+        self.speech_thread = threading.Thread(target=self.run_speech_recognition, daemon=True)
+        self.speech_thread.start()
+        print("Voice control activated. Say commands to control your smart home.")
 
     def update_sensor_data(self):
         if self.serial_port:
@@ -1246,6 +1258,124 @@ class SmartHomeApp(QMainWindow):
                     print("[SERIAL] Sent: GARAGE_LIGHT_OFF")
                 except Exception as e:
                     print(f"Error sending garage light command: {e}")
+
+    def run_speech_recognition(self):
+        """Run speech recognition in a background thread"""
+        try:
+            model = Model(r"C:\VOSK\vosk-model-en-us-0.22")
+            recognizer = KaldiRecognizer(model, 16000)
+            
+            def audio_callback(indata, frames, time, status):
+                if status:
+                    print("Audio status:", status)
+                self.speech_queue.put(bytes(indata))
+            
+            with sd.RawInputStream(samplerate=16000, blocksize=8000, dtype='int16',
+                                channels=1, callback=audio_callback):
+                print("Voice control active. Listening...")
+                while self.speech_running:
+                    data = self.speech_queue.get()
+                    if recognizer.AcceptWaveform(data):
+                        result = json.loads(recognizer.Result())
+                        text = result.get("text", "").lower()
+                        if text:
+                            print(f"Voice command recognized: '{text}'")
+                            self.process_voice_command(text)
+        except Exception as e:
+            print(f"Speech recognition error: {e}")
+
+    def process_voice_command(self, text):
+        """Process the recognized voice command"""
+        # Gate commands
+        if "open" in text and "gate" in text:
+            print("Voice command: Open gate")
+            self.send_command("OPEN_MAIN_GATE")
+        elif "close" in text and "gate" in text:
+            print("Voice command: Close gate")  
+            self.send_command("CLOSE_MAIN_GATE")
+            
+        # Door commands
+        elif "open" in text and "main door" in text:
+            print("Voice command: Open main door")
+            self.handle_faceid_button()
+        elif "open" in text and "back door" in text:
+            print("Voice command: Open back door")
+            self.handle_faceid_backdoor_button()
+        elif "close" in text and "main door" in text:
+            print("Voice command: Close main door")
+            self.send_command("CLOSE_MAIN_DOOR")
+        elif "close" in text and "back door" in text:
+            print("Voice command: Close back door")
+            self.send_command("CLOSE_BACK_DOOR")
+            
+        # Garage door commands
+        elif "open" in text and "garage door" in text:
+            print("Voice command: Open garage door")
+            self.send_command("OPENGARAGEDOOR")
+        elif "close" in text and "garage door" in text:
+            print("Voice command: Close garage door")
+            self.send_command("CLOSEGARAGEDOOR")
+            
+        # Light commands
+        elif ("turn on" in text or "open" in text) and "light" in text:
+            room = self.detect_room_in_command(text)
+            if room:
+                print(f"Voice command: Turn on {room} light")
+                self.send_command(f"{room.upper()}_BULB_ON")
+            else:
+                print("Voice command: Turn on all lights")
+                self.send_command("ALL_LIGHTS_ON")
+                
+        elif ("turn off" in text or "close" in text) and "light" in text:
+            room = self.detect_room_in_command(text)
+            if room:
+                print(f"Voice command: Turn off {room} light")
+                self.send_command(f"{room.upper()}_BULB_OFF")
+            else:
+                print("Voice command: Turn off all lights")
+                self.send_command("ALL_LIGHTS_OFF")
+                
+        # Air conditioner commands
+        elif ("turn on" in text or "open" in text) and ("air" in text or "conditioner" in text or "ac" in text):
+            print("Voice command: Turn on air conditioner")
+            self.send_command("AIRCON_ON")
+        elif ("turn off" in text or "close" in text) and ("air" in text or "conditioner" in text or "ac" in text):
+            print("Voice command: Turn off air conditioner")
+            self.send_command("AIRCON_OFF")
+
+    def detect_room_in_command(self, text):
+        """Detect which room is mentioned in the command"""
+        rooms = {
+            "living": "LIVING_ROOM",
+            "kitchen": "KITCHEN",
+            "bedroom": "BEDROOM",
+            "garage": "GARAGE",
+            "gym": "GYM"
+        }
+        
+        for key, value in rooms.items():
+            if key in text:
+                return value
+        return None
+
+    def send_command(self, command):
+        """Send a command to Arduino"""
+        if self.serial_port:
+            try:
+                self.serial_port.write(f"{command}\n".encode())
+                print(f"[SERIAL] Sent: {command}")
+            except Exception as e:
+                print(f"Error sending command: {e}")
+
+    def closeEvent(self, event):
+        """Clean up resources when the application is closing"""
+        print("Shutting down voice control...")
+        self.speech_running = False
+        if self.speech_thread.is_alive():
+            self.speech_thread.join(1.0)  # Wait up to 1 second for thread to finish
+        if self.serial_port:
+            self.serial_port.close()
+        event.accept()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
