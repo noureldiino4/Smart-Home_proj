@@ -1202,7 +1202,8 @@ class SmartHomeApp(QMainWindow):
                 try:
                     self.serial_port.write(b"AIRCON_OFF\n")
                     print("[SERIAL] Sent: GYM_AIRCON_OFF")
-                except Exception as e:
+                except Exception as e:  
+                    
                     print(f"Error sending gym aircon command: {e}")
 
     def handle_gym_bulb_toggle(self, state):
