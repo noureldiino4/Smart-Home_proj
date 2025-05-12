@@ -5,6 +5,7 @@ import os
 # 1) List all of your reference image paths
 reference_image_paths = [
     r"A:\College stuff\DATA AQ\Nour1.jpg",
+    r"A:\College stuff\DATA AQ\Nour.jpg",
     r"A:\College stuff\DATA AQ\Magd1.jpg",
     r"A:\College stuff\DATA AQ\Abdo1.jpg",
     r"A:\College stuff\DATA AQ\Fares1.jpg"

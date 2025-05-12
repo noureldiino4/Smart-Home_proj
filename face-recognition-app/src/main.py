@@ -12,6 +12,7 @@ import argparse  # Add this import
 # -----------------------------------------------------------------------------
 REFERENCE_IMAGE_PATHS = [
     r"A:\College stuff\DATA AQ\Nour1.jpg",
+    r"A:\College stuff\DATA AQ\Nour.jpg",
     r"A:\College stuff\DATA AQ\Magd1.jpg",
     r"A:\College stuff\DATA AQ\Abdo1.jpg",
     r"A:\College stuff\DATA AQ\Fares1.jpg",

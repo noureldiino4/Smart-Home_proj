@@ -300,6 +300,42 @@ class SmartHomeApp(QMainWindow):
         self.speech_thread.start()
         print("Voice control activated. Say commands to control your smart home.")
 
+        # Add these variables for state collection
+        self.collecting_states = False
+        self.collected_states = []
+        
+        # Request all device states at startup
+        QTimer.singleShot(2000, self.request_all_states)  # Wait 2 sec for Arduino to initialize
+
+        # Connect initial Living Room toggle buttons since that's the starting view
+        for name, frame in self.device_frames.items():
+            if name == "Air Conditioner":
+                for i in range(frame.layout().count()):
+                    item = frame.layout().itemAt(i)
+                    if isinstance(item, QHBoxLayout):
+                        for j in range(item.count()):
+                            widget = item.itemAt(j).widget()
+                            if isinstance(widget, AnimatedToggle):
+                                widget.stateChanged.connect(self.handle_living_room_aircon_toggle)
+                                break
+            elif name == "Bulb Lamp":
+                for i in range(frame.layout().count()):
+                    item = frame.layout().itemAt(i)
+                    if isinstance(item, QHBoxLayout):
+                        for j in range(item.count()):
+                            widget = item.itemAt(j).widget()
+                            if isinstance(widget, AnimatedToggle):
+                                widget.stateChanged.connect(self.handle_living_room_bulb_toggle)
+                                break
+
+    def request_all_states(self):
+        if self.serial_port:
+            try:
+                self.serial_port.write(b"GET_ALL_STATES\n")
+                print("[SERIAL] Requested all device states")
+            except Exception as e:
+                print(f"Error requesting device states: {e}")
+
     def update_sensor_data(self):
         if self.serial_port:
             try:
@@ -307,36 +343,41 @@ class SmartHomeApp(QMainWindow):
                 if line:
                     print(f"Serial Data: {line}")
                     if "Temperature:" in line and "Humidity:" in line:
-                        # Extract temperature and humidity values
-                        temp_start = line.find("Temperature:") + len("Temperature:")
-                        temp_end = line.find("C")
-                        temp = line[temp_start:temp_end].strip()
-
-                        humidity_start = line.find("Humidity:") + len("Humidity:")
-                        humidity_end = line.find("%")
-                        humidity = line[humidity_start:humidity_end].strip()
-
-                        # Update the labels
-                        self.temp_label.setText(f"Temperature: {temp}°C")
-                        self.humidity_label.setText(f"Humidity: {humidity}%")
-                    
-                    # Add this code to handle garage door state messages
-                    elif "GarageState:" in line:
-                        state = line.split("GarageState:")[1].strip()
-                        # Update garage door toggle if it exists in the current view
-                        if "Garage Door" in self.device_frames:
-                            garage_frame = self.device_frames["Garage Door"]
-                            # Find the toggle button in the frame's layout
-                            for i in range(garage_frame.layout().count()):
-                                item = garage_frame.layout().itemAt(i)
-                                if isinstance(item, QHBoxLayout):
-                                    for j in range(item.count()):
-                                        widget = item.itemAt(j).widget()
-                                        if isinstance(widget, AnimatedToggle):
-                                            widget.blockSignals(True)  # Prevent toggle from sending commands
-                                            widget.setChecked(state == "OPEN")
-                                            widget.blockSignals(False)
-                                            break
+                        # Parse temperature and humidity from the line
+                        try:
+                            # Extract temperature value
+                            temp_start = line.find("Temperature:") + len("Temperature:")
+                            temp_end = line.find("C", temp_start)
+                            if temp_end > temp_start:
+                                temp = float(line[temp_start:temp_end].strip())
+                                
+                                # Extract humidity value
+                                humidity_start = line.find("Humidity:") + len("Humidity:")
+                                humidity_end = line.find("%", humidity_start)
+                                if humidity_end > humidity_start:
+                                    humidity = float(line[humidity_start:humidity_end].strip())
+                                    
+                                    # Update UI labels
+                                    self.temp_label.setText(f"Temperature: {temp:.1f}°C")
+                                    self.humidity_label.setText(f"Humidity: {humidity:.1f}%")
+                                    print(f"Updated sensors: Temp={temp}°C, Humidity={humidity}%")
+                        except ValueError as e:
+                            print(f"Error parsing sensor data: {e}")
+                    elif line.startswith("STATE:"):
+                        # Process individual state updates
+                        self.handle_state_update(line)
+                    elif line == "STATE_BEGIN":
+                        # Start collecting a batch of states
+                        self.collecting_states = True
+                        self.collected_states = []
+                    elif line == "STATE_END" and self.collecting_states:
+                        # Process all collected states
+                        self.collecting_states = False
+                        for state_message in self.collected_states:
+                            self.handle_state_update(state_message)
+                    elif self.collecting_states:
+                        # Add to collection
+                        self.collected_states.append(line)
             except Exception as e:
                 print(f"Error reading serial data: {e}")
 
@@ -1410,6 +1451,76 @@ class SmartHomeApp(QMainWindow):
         if self.serial_port:
             self.serial_port.close()
         event.accept()
+
+        
+    def handle_state_update(self, message):
+        """Process state update messages from Arduino"""
+        if not message.startswith("STATE:"):
+            return
+            
+        parts = message.split(":")
+        if len(parts) != 3:
+            return
+            
+        device = parts[1]
+        state = parts[2]
+        
+        print(f"Received state update: {device} = {state}")
+        
+        # Update our internal state dictionary
+        if device == "MAIN_DOOR":
+            self.device_states["MAIN_DOOR"] = (state == "OPEN")
+        elif device == "BACK_DOOR":
+            self.device_states["BACK_DOOR"] = (state == "OPEN")
+        elif device == "GARAGE_DOOR":
+            self.device_states["GARAGE_DOOR"] = (state == "OPEN")
+        elif device == "GATE":
+            self.device_states["GATE"] = (state == "OPEN")
+        elif device == "FAN":
+            self.device_states["FAN"] = (state == "ON")
+        elif device == "LIVING_ROOM_LIGHT":
+            self.device_states["LIVING_ROOM_BULB"] = (state == "ON")
+        # Add cases for all other devices
+        
+        # Update UI if the device is currently visible
+        self.update_ui_for_device(device)
+    
+    def update_ui_for_device(self, device):
+        """Update UI elements based on device state changes"""
+        # Find toggle buttons and update them without triggering their actions
+        
+        # Map device names to UI frame names
+        ui_map = {
+            "LIVING_ROOM_LIGHT": "Bulb Lamp",
+            "GARAGE_DOOR": "Garage Door",
+            "FAN": "Air Conditioner",
+            # Add mappings for all devices
+        }
+        
+        if device in ui_map and ui_map[device] in self.device_frames:
+            frame = self.device_frames[ui_map[device]]
+            
+            # Find AnimatedToggle in this frame
+            for i in range(frame.layout().count()):
+                item = frame.layout().itemAt(i)
+                if isinstance(item, QHBoxLayout):
+                    for j in range(item.count()):
+                        widget = item.itemAt(j).widget()
+                        if isinstance(widget, AnimatedToggle):
+                            # Block signals to prevent toggle from triggering another command
+                            widget.blockSignals(True)
+                            
+                            # Set toggle state based on device state
+                            if device == "LIVING_ROOM_LIGHT":
+                                widget.setChecked(self.device_states["LIVING_ROOM_BULB"])
+                            elif device == "GARAGE_DOOR":
+                                widget.setChecked(self.device_states["GARAGE_DOOR"])
+                            # Add other device cases
+                                
+                            widget.blockSignals(False)
+                            break
+
+    
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
